@@ -1,0 +1,36 @@
+{ pkgs ? import <nixpkgs> { } }:
+pkgs.mkShell {
+  buildInputs = with pkgs; [
+    wayland
+    wayland-protocols
+    wayland-scanner
+    wlroots
+    pixman
+    libxkbcommon
+    pkg-config
+    gcc
+    gnumake
+    ghc
+    cabal-install
+  ];
+  shellHook = ''
+    export WAYLAND_PROTOCOLS=${pkgs.wayland-protocols}/share/wayland-protocols
+    export WAYLAND_SCANNER=${pkgs.wayland-scanner}/bin/wayland-scanner
+    export WLR_RENDERER=pixman
+    
+    # Build tinywl
+    echo "Building tinywl..."
+    cd tinywl
+    make clean
+    make -f Makefile.shared
+    cd ..
+    
+    # Add the tinywl directory to LD_LIBRARY_PATH
+    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$PWD/tinywl
+    
+    echo "Wayland development environment"
+    echo "wayland-scanner version: $(wayland-scanner --version)"
+    echo "Wayland protocols path: $WAYLAND_PROTOCOLS"
+    echo "LD_LIBRARY_PATH includes: $LD_LIBRARY_PATH"
+  '';
+}
