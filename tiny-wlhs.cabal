@@ -19,6 +19,7 @@ executable tiny-wlhs
     main-is:          Main.hs
     other-modules:    TinyWL.FFI
     build-depends:    base ^>=4.18.2.1
+                 ,    unix
     hs-source-dirs:   exe
     default-language: Haskell2010
     

@@ -14,9 +14,9 @@ Create a haskell implementation of c_main that uses haskell bindings and impleme
 
 ### Stage Plan
 
-1. Refactor tinywl's c_main function:
+1. ~~Refactor tinywl's c_main function:~~
     
-    - Currently there is about 200 lines in c_main, we need to refactor this to be a series of function calls and no logic
+    - ~~Currently there is about 200 lines in c_main, we need to refactor this to be a series of function calls and no logic~~
 
 2. Expose all function calls in c_main to FFI
     

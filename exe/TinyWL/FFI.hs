@@ -1,4 +1,3 @@
-
 {-# LANGUAGE ForeignFunctionInterface #-}
 
 module TinyWL.FFI where
