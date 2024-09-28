@@ -16,15 +16,15 @@ Create a Haskell implementation of `c_main` that uses Haskell bindings and imple
 
 ### Progress
 
-1. Refactoring TinyWL's `c_main` function
-   - In progress: Breaking down the ~200 lines of `c_main` into a series of function calls with minimal logic
+1. ~~Refactoring TinyWL's `c_main` function~~
+   - Done: Breaking down the ~200 lines of `c_main` into a series of function calls with minimal logic
    
 2. Exposing function calls to FFI
-   - Planned: Approximately 25 function calls will be exposed via bindings
-   - Planned: Additional helper C functions also to beb exposed
+   - In Progress: Approximately 25 function calls will be exposed via bindings
+   - In Progress: Additional helper C functions also to be exposed
    
 3. Replacing `c_main` with Haskell main
-   - Planned: Replication of `c_main` functionality in Haskell using FFI function calls
+   - In Progress: Replication of `c_main` functionality in Haskell using FFI function calls
    
 4. Testing wlhs bindings
    - Planned: Replacement of local FFI function calls with those defined in wlhs
