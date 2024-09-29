@@ -31,3 +31,10 @@ All notable changes to this project will be documented in this file.
 
 ## 0.1.0.1 - 2024-09-28
   - Refactored `c_main` in `tiny.c` and moved as much as possible to functions.
+
+## 0.1.0.2 - 2024-09-29
+  - Removed c_main and replaced with haskell implementation
+  - Added wlhs as a submodule and added to cabal and project
+  - Successfully imported wlhs log bindings
+  - Added wrapper for wlr_log
+  - Successfully implemented logging using wlhs bindings

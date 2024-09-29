@@ -826,7 +826,7 @@ static void server_new_xdg_surface(struct wl_listener *listener, void *data) {
                 &toplevel->request_fullscreen);
 }
 
-// Add these function declarations after the struct definitions and before c_main
+// Function declarations
 char* parse_arguments(int argc, char *argv[]);
 bool initialize_wl_display(struct tinywl_server *server);
 bool initialize_backend(struct tinywl_server *server);
@@ -841,36 +841,54 @@ void initialize_seat(struct tinywl_server *server);
 const char* start_backend(struct tinywl_server *server);
 void run_startup_command(const char *startup_cmd);
 void cleanup(struct tinywl_server *server);
+struct tinywl_server *server_create();
+void server_destroy(struct tinywl_server *server);
+bool server_init(struct tinywl_server *server);
+const char *server_start(struct tinywl_server *server);
+void server_run(struct tinywl_server *server);
+void server_set_startup_command(const char *cmd);
 
-int c_main(int argc, char *argv[]) {
-    wlr_log_init(WLR_DEBUG, NULL);
-    char *startup_cmd = parse_arguments(argc, argv);
-
-    struct tinywl_server server = {0};
-    if (!initialize_wl_display(&server)) return 1;
-    if (!initialize_backend(&server)) return 1;
-    if (!initialize_renderer(&server)) return 1;
-    if (!initialize_allocator(&server)) return 1;
-
-    initialize_compositor(&server);
-    initialize_output_layout(&server);
-    initialize_scene(&server);
-    initialize_xdg_shell(&server);
-    initialize_cursor(&server);
-    initialize_seat(&server);
-
-    const char *socket = start_backend(&server);
-    if (!socket) return 1;
-
-    setenv("WAYLAND_DISPLAY", socket, true);
-    run_startup_command(startup_cmd);
-
-    wlr_log(WLR_INFO, "Running Wayland compositor on WAYLAND_DISPLAY=%s", socket);
-    wl_display_run(server.wl_display);
-
-    cleanup(&server);
-    return 0;
+// New server functions
+struct tinywl_server *server_create() {
+    struct tinywl_server *server = calloc(1, sizeof(struct tinywl_server));
+    return server;
 }
+
+void server_destroy(struct tinywl_server *server) {
+    cleanup(server);
+    free(server);
+}
+
+bool server_init(struct tinywl_server *server) {
+    wlr_log_init(WLR_DEBUG, NULL);
+    
+    if (!initialize_wl_display(server)) return false;
+    if (!initialize_backend(server)) return false;
+    if (!initialize_renderer(server)) return false;
+    if (!initialize_allocator(server)) return false;
+
+    initialize_compositor(server);
+    initialize_output_layout(server);
+    initialize_scene(server);
+    initialize_xdg_shell(server);
+    initialize_cursor(server);
+    initialize_seat(server);
+
+    return true;
+}
+
+const char *server_start(struct tinywl_server *server) {
+    return start_backend(server);
+}
+
+void server_run(struct tinywl_server *server) {
+    wl_display_run(server->wl_display);
+}
+
+void server_set_startup_command(const char *cmd) {
+    run_startup_command(cmd);
+}
+
 
 char* parse_arguments(int argc, char *argv[]) {
     char *startup_cmd = NULL;

@@ -1,0 +1,8 @@
+packages: .
+          ./wlhs
+
+package wlhs
+  flags: +use-system-libwlroots
+
+package tiny-wlhs
+  ghc-options: -Wall

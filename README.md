@@ -19,24 +19,25 @@ Create a Haskell implementation of `c_main` that uses Haskell bindings and imple
 1. ~~Refactoring TinyWL's `c_main` function~~
    - Done: Breaking down the ~200 lines of `c_main` into a series of function calls with minimal logic
    
-2. Exposing function calls to FFI
-   - In Progress: Approximately 25 function calls will be exposed via bindings
-   - In Progress: Additional helper C functions also to be exposed
+2. ~~Exposing function calls to FFI~~
+   - NA: Approximately 25 function calls will be exposed via bindings
+   - Done: Additional helper C functions also to be exposed
    
-3. Replacing `c_main` with Haskell main
-   - In Progress: Replication of `c_main` functionality in Haskell using FFI function calls
+3. ~~replacing `c_main` with Haskell main~~
+   - Done: Replication of `c_main` functionality in Haskell using FFI function calls
    
-4. Testing wlhs bindings
-   - Planned: Replacement of local FFI function calls with those defined in wlhs
+4. ~~Testing wlhs bindings~~
+   - Partially Done: Replacement of local FFI function calls with those defined in wlhs
    
-5. Refactoring local C helper functions
-   - Planned: Moving remaining C code to Haskell implementation
+5. ~~Refactoring local C helper functions~~
+   - Done: Moving remaining C code to Haskell implementation
    
 6. Progress assessment and next stage planning
    - Planned: Evaluation of Stage 1 and preparation for subsequent stages
 
 ## Getting Started
 
+1. Ensure you have the submodules cloned down
 1. I created a shell.nix, you should be able to simply run `nix-shell` 
 1. then `cabal run` 
 1. tinywl will create a window you can play around with.

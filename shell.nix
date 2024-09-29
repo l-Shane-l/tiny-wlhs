@@ -7,7 +7,25 @@ pkgs.mkShell {
     wlroots
     pixman
     libxkbcommon
+    libffi
+    libdrm
+    egl-wayland
+    libGL
+    mesa
+    vulkan-loader
     pkg-config
+    libudev-zero
+    systemdLibs
+    libdisplay-info
+    libliftoff
+    libinput
+    xorg.libxcb
+    xorg.libXau
+    xorg.libXdmcp
+    xorg.xcbutilrenderutil
+    xorg.xcbutilwm
+    xorg.xcbutilerrors
+    seatd
     gcc
     gnumake
     ghc
