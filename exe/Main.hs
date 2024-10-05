@@ -1,7 +1,8 @@
 
 module Main where
 
-import TinyWL.FFI
+import qualified TinyWL.FFI as FFI
+import qualified TinyWL.Server as Server
 import System.Environment (getArgs, setEnv)
 import Foreign.C.String
 import Foreign.Ptr
@@ -17,14 +18,21 @@ main = do
     wlr_log WLR_INFO "Initializing TinyWL with wlhs bindings"
 
     args <- getArgs
-    server <- c_server_create
+    server <- FFI.c_server_create
     wlr_log WLR_DEBUG "Server created"
 
-    initSuccess <- c_server_init server
+    initSuccess <- FFI.c_server_init server
     if initSuccess
         then do
             wlr_log WLR_INFO "Server initialized successfully"
-            socket <- c_server_start server
+            wlDisplay <- Server.getWlDisplay server
+            renderer <- Server.getRenderer server
+            backend <- Server.getBackend server
+            
+            putStrLn $ "wl_display pointer: " ++ show wlDisplay
+            putStrLn $ "renderer pointer: " ++ show renderer
+            putStrLn $ "backend pointer: " ++ show backend
+            socket <- FFI.c_server_start server
             if socket /= nullPtr
                 then do
                     socketStr <- peekCString socket
@@ -32,12 +40,12 @@ main = do
                     wlr_log WLR_INFO $ "WAYLAND_DISPLAY set to " ++ socketStr
                     case args of
                         ("-s":cmd:_) -> do
-                            withCString cmd c_server_set_startup_command
+                            withCString cmd FFI.c_server_set_startup_command
                             wlr_log WLR_DEBUG $ "Startup command set: " ++ cmd
                         _ -> return ()
                     putStrLn $ "Running Wayland compositor on WAYLAND_DISPLAY=" ++ socketStr
-                    c_server_run server
+                    FFI.c_server_run server
                 else wlr_log WLR_ERROR "Failed to start server"
         else wlr_log WLR_ERROR "Failed to initialize server"
-    c_server_destroy server
+    FFI.c_server_destroy server
     wlr_log WLR_INFO "Server destroyed, shutting down"

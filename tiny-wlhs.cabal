@@ -18,6 +18,7 @@ executable tiny-wlhs
     import:           warnings
     main-is:          Main.hs
     other-modules:    TinyWL.FFI
+                 ,    TinyWL.Server
     build-depends:    base ^>=4.18.2.1
                  ,    unix
                  ,    wlhs-bindings
@@ -27,7 +28,7 @@ executable tiny-wlhs
     
     -- Add these lines for FFI support
     default-extensions:       ForeignFunctionInterface
-    extra-libraries:  tinywl
+    extra-libraries:  tinywl xkbcommon
     extra-lib-dirs:   tinywl
     
     -- If you need to specify include directories
