@@ -1,5 +1,7 @@
-{ pkgs ? import <nixpkgs> { } }:
-pkgs.mkShell {
+{ system ? builtins.currentSystem }:
+let
+  pkgs = import ./nix/nixpkgs.nix { inherit system; };
+in pkgs.mkShell {
   buildInputs = with pkgs; [
     wayland
     wayland-protocols
