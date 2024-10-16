@@ -1,0 +1,71 @@
+{
+  description = "Wayland development environment";
+
+  inputs = {
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    flake-utils.url = "github:numtide/flake-utils";
+  };
+
+  outputs = { self, nixpkgs, flake-utils }:
+    flake-utils.lib.eachDefaultSystem (system:
+      let
+        pkgs = nixpkgs.legacyPackages.${system};
+      in
+      {
+        devShells.default = pkgs.mkShell {
+          buildInputs = with pkgs; [
+            wayland
+            wayland-protocols
+            wayland-scanner
+            wlroots
+            pixman
+            libxkbcommon
+            libffi
+            libdrm
+            egl-wayland
+            libGL
+            mesa
+            vulkan-loader
+            pkg-config
+            libudev-zero
+            systemdLibs
+            libdisplay-info
+            libliftoff
+            libinput
+            xorg.libxcb
+            xorg.libXau
+            xorg.libXdmcp
+            xorg.xcbutilrenderutil
+            xorg.xcbutilwm
+            xorg.xcbutilerrors
+            seatd
+            gcc
+            gnumake
+            ghc
+            cabal-install
+          ];
+          shellHook = ''
+            export WAYLAND_PROTOCOLS=${pkgs.wayland-protocols}/share/wayland-protocols
+            export WAYLAND_SCANNER=${pkgs.wayland-scanner}/bin/wayland-scanner
+            export WLR_RENDERER=pixman
+            
+            # Build tinywl
+            echo "Building tinywl..."
+            cd tinywl
+            make clean
+            make -f Makefile.shared
+            cd ..
+            
+            # Add the tinywl directory to LD_LIBRARY_PATH
+            export PKG_CONFIG_PATH="${pkgs.wlroots}/lib/pkgconfig:$PKG_CONFIG_PATH"
+            export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$PWD/tinywl
+            
+            echo "Wayland development environment"
+            echo "wayland-scanner version: $(wayland-scanner --version)"
+            echo "Wayland protocols path: $WAYLAND_PROTOCOLS"
+            echo "LD_LIBRARY_PATH includes: $LD_LIBRARY_PATH"
+          '';
+        };
+      }
+    );
+}
