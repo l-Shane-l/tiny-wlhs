@@ -55,8 +55,4 @@ The next steps will be using wlhs where possible, one bindings header at a time.
 
 This will require some planning to chart a course through the various bindings.
 
-The lack of a nix flake for this project is also something I should address. Already wlhs uses wlroots 17.1 while this project uses 17.3.
-
-Getting nix-shell working here was a challenge, I simply kept running it to find what was missing. I think this is useful because there was some surprising thing in there.
-
-However long term the flakes at least should match between wlhs and tiny-wlhs.
+Project was updated to use nix niv to pin versions and hopefully make builds more repeatably. This seems to have addressed the issues at hand now. In the future it might make sense to switch to a nix flake and use something like cachix.

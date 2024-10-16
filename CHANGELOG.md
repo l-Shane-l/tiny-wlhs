@@ -38,3 +38,8 @@ All notable changes to this project will be documented in this file.
   - Successfully imported wlhs log bindings
   - Added wrapper for wlr_log
   - Successfully implemented logging using wlhs bindings
+
+## 0.1.0.3 - 2024-10-16
+  - nix niv added to project to pin versions
+  - update of readme to include submodules
+  

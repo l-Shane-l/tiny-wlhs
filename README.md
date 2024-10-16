@@ -115,7 +115,7 @@ sequenceDiagram
 ```
 
 ## Getting Started
-1. Ensure you have the submodules cloned down
+1. Ensure you have the submodules cloned down `git clone --recurse-submodules https://github.com/l-Shane-l/tiny-wlhs.git`
 2. I created a shell.nix, you should be able to simply run `nix-shell` 
 3. then `cabal run` 
 4. tinywl will create a window you can play around with.
