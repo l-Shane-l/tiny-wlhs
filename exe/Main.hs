@@ -7,6 +7,7 @@ import System.Environment (getArgs, setEnv)
 import Foreign.C.String
 import Foreign.Ptr
 import WLR.Util.Log
+import WLR.Types.Compositor
 
 
 main :: IO ()
@@ -28,6 +29,7 @@ main = do
             wlDisplay <- Server.getWlDisplay server
             renderer <- Server.getRenderer server
             backend <- Server.getBackend server
+            _ <- FFI.c_wlr_compositor_create wlDisplay 5 renderer
             
             putStrLn $ "wl_display pointer: " ++ show wlDisplay
             putStrLn $ "renderer pointer: " ++ show renderer

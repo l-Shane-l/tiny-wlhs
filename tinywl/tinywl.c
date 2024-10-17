@@ -935,7 +935,7 @@ bool initialize_allocator(struct tinywl_server *server) {
 }
 
 void initialize_compositor(struct tinywl_server *server) {
-    wlr_compositor_create(server->wl_display, 5, server->renderer);
+    /* wlr_compositor_create(server->wl_display, 5, server->renderer); */
     wlr_subcompositor_create(server->wl_display);
     wlr_data_device_manager_create(server->wl_display);
 }

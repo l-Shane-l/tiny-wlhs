@@ -6,24 +6,23 @@ module TinyWL.Server where
 import Foreign.Ptr
 import Foreign.C.Types
 import Foreign.Storable
-import TinyWL.FFI (TinyWLServer)
-
-
+-- the three types below should be imported from wlhs but do not exist there
+import TinyWL.FFI (TinyWLServer, WlDisplay, WlrBackend)
+import WLR.Render.Renderer (WLR_renderer)
 #include "tinywl.h"
-
 
 type TinyWLServerPtr = Ptr TinyWLServer
 
 -- Getter for wl_display
-getWlDisplay :: TinyWLServerPtr -> IO (Ptr ())
+getWlDisplay :: TinyWLServerPtr -> IO (Ptr WlDisplay)  -- Corrected type
 getWlDisplay ptr = #{peek struct tinywl_server, wl_display} ptr
 
 -- Getter for renderer
-getRenderer :: TinyWLServerPtr -> IO (Ptr ())
+getRenderer :: TinyWLServerPtr -> IO (Ptr WLR_renderer)  -- Corrected type
 getRenderer ptr = #{peek struct tinywl_server, renderer} ptr
 
 -- Getter for backend
-getBackend :: TinyWLServerPtr -> IO (Ptr ())
+getBackend :: TinyWLServerPtr -> IO (Ptr WlrBackend)  -- Corrected type
 getBackend ptr = #{peek struct tinywl_server, backend} ptr
 
 -- Setter for cursor_mode
