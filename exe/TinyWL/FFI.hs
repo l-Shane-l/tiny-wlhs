@@ -10,13 +10,24 @@ import WLR.Render.Renderer (WLR_renderer)
 
 data TinyWLServer
 
--- the three below are temporary and should be imported from wlhs like WLR_renderer is
+-- the five below are temporary and should be imported from wlhs like WLR_renderer is
 data WlDisplay
 data WlrCompositor
+data WlrSubCompositor
 data WlrBackend
+data WlrDataDeviceManager
 
 -- This should be in wlhs and not here
 foreign import ccall "wlr_compositor_create" c_wlr_compositor_create :: Ptr WlDisplay -> CUInt -> Ptr WLR_renderer -> IO (Ptr WlrCompositor)
+foreign import ccall "wlr_subcompositor_create" c_wlr_subcompositor_create :: Ptr WlDisplay -> IO (Ptr WlrSubCompositor)
+foreign import ccall "wlr_data_device_manager_create" c_wlr_data_device_manager_create :: Ptr WlDisplay -> IO(Ptr WlrDataDeviceManager)
+
+initialize_compositor :: Ptr WlDisplay -> CUInt -> Ptr WLR_renderer -> IO (Ptr WlrCompositor, Ptr WlrSubCompositor, Ptr WlrDataDeviceManager)
+initialize_compositor wlDisplay num renderer = do
+      a <- c_wlr_compositor_create wlDisplay num renderer
+      b <- c_wlr_subcompositor_create wlDisplay
+      c <- c_wlr_data_device_manager_create wlDisplay
+      return (a,b,c)
 
 foreign import ccall "server_create" c_server_create :: IO (Ptr TinyWLServer)
 foreign import ccall "server_destroy" c_server_destroy :: Ptr TinyWLServer -> IO ()

@@ -1,4 +1,3 @@
-
 module Main where
 
 import qualified TinyWL.FFI as FFI
@@ -7,7 +6,6 @@ import System.Environment (getArgs, setEnv)
 import Foreign.C.String
 import Foreign.Ptr
 import WLR.Util.Log
-import WLR.Types.Compositor
 
 
 main :: IO ()
@@ -17,6 +15,7 @@ main = do
 
     -- Add a test log message
     wlr_log WLR_INFO "Initializing TinyWL with wlhs bindings"
+    
 
     args <- getArgs
     server <- FFI.c_server_create
@@ -29,11 +28,7 @@ main = do
             wlDisplay <- Server.getWlDisplay server
             renderer <- Server.getRenderer server
             backend <- Server.getBackend server
-            _ <- FFI.c_wlr_compositor_create wlDisplay 5 renderer
-            
-            putStrLn $ "wl_display pointer: " ++ show wlDisplay
-            putStrLn $ "renderer pointer: " ++ show renderer
-            putStrLn $ "backend pointer: " ++ show backend
+            _ <- FFI.initialize_compositor wlDisplay 5 renderer
             socket <- FFI.c_server_start server
             if socket /= nullPtr
                 then do

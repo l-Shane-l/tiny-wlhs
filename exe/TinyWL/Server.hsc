@@ -14,15 +14,15 @@ import WLR.Render.Renderer (WLR_renderer)
 type TinyWLServerPtr = Ptr TinyWLServer
 
 -- Getter for wl_display
-getWlDisplay :: TinyWLServerPtr -> IO (Ptr WlDisplay)  -- Corrected type
+getWlDisplay :: TinyWLServerPtr -> IO (Ptr WlDisplay)
 getWlDisplay ptr = #{peek struct tinywl_server, wl_display} ptr
 
 -- Getter for renderer
-getRenderer :: TinyWLServerPtr -> IO (Ptr WLR_renderer)  -- Corrected type
+getRenderer :: TinyWLServerPtr -> IO (Ptr WLR_renderer)
 getRenderer ptr = #{peek struct tinywl_server, renderer} ptr
 
 -- Getter for backend
-getBackend :: TinyWLServerPtr -> IO (Ptr WlrBackend)  -- Corrected type
+getBackend :: TinyWLServerPtr -> IO (Ptr WlrBackend)
 getBackend ptr = #{peek struct tinywl_server, backend} ptr
 
 -- Setter for cursor_mode

@@ -867,7 +867,6 @@ bool server_init(struct tinywl_server *server) {
     if (!initialize_renderer(server)) return false;
     if (!initialize_allocator(server)) return false;
 
-    initialize_compositor(server);
     initialize_output_layout(server);
     initialize_scene(server);
     initialize_xdg_shell(server);
@@ -934,11 +933,6 @@ bool initialize_allocator(struct tinywl_server *server) {
     return server->allocator != NULL;
 }
 
-void initialize_compositor(struct tinywl_server *server) {
-    /* wlr_compositor_create(server->wl_display, 5, server->renderer); */
-    wlr_subcompositor_create(server->wl_display);
-    wlr_data_device_manager_create(server->wl_display);
-}
 
 void initialize_output_layout(struct tinywl_server *server) {
     server->output_layout = wlr_output_layout_create();
