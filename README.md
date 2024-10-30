@@ -1,15 +1,11 @@
 # TinyWL Haskell Implementation
 
 ## Project Overview
-This project aims to create a total Haskell implementation of TinyWL (Tiny Wayland Compositor) using Haskell bindings for wlroots. The ultimate goal is to provide a way to test and validate Haskell bindings for the wlroots library.
+This project aims to create a total Haskell implementation of TinyWL (Tiny Wayland Compositor) using Haskell bindings for wlroots. 
+If successful a user will be able to create a Wayland compostitor using this library using only haskell,
 
 ## Current Status
 Please check [TODO.md](TODO.md)
-
-The project is currently in Stage 1 of development. I am working on refactoring TinyWL's main function into Haskell.
-
-### Stage 1 Goal
-Create a Haskell implementation of `c_main` that uses Haskell bindings and implements its logic in Haskell.
 
 ## System Architecture
 

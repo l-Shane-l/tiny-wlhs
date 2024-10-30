@@ -1,7 +1,8 @@
 module Main where
 
-import qualified TinyWL.FFI as FFI
-import qualified TinyWL.Server as Server
+import qualified TinyWL.Server.FFI as FFI
+import qualified TinyWL.Server.Server as Server
+import qualified TinyWL.Compositor.Compositor as Compositor
 import System.Environment (getArgs, setEnv)
 import Foreign.C.String
 import Foreign.Ptr
@@ -27,8 +28,7 @@ main = do
             wlr_log WLR_INFO "Server initialized successfully"
             wlDisplay <- Server.getWlDisplay server
             renderer <- Server.getRenderer server
-            backend <- Server.getBackend server
-            _ <- FFI.initialize_compositor wlDisplay 5 renderer
+            _ <- Compositor.initialize_compositor wlDisplay 5 renderer
             socket <- FFI.c_server_start server
             if socket /= nullPtr
                 then do

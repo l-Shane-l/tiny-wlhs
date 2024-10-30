@@ -43,3 +43,6 @@ All notable changes to this project will be documented in this file.
   - nix niv added to project to pin versions
   - update of readme to include submodules
   
+## 0.1.0.4 - 2024-10-30
+  - Moved compositor_init from c to haskell
+  - refactored project to be move towards something somebody can use to create compositors instead of just a test for wlhs

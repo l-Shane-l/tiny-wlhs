@@ -1,13 +1,14 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
 {-# LANGUAGE CPP #-}
 
-module TinyWL.Server where
+module TinyWL.Server.Server where
 
 import Foreign.Ptr
 import Foreign.C.Types
 import Foreign.Storable
 -- the three types below should be imported from wlhs but do not exist there
-import TinyWL.FFI (TinyWLServer, WlDisplay, WlrBackend)
+import TinyWL.Compositor.Types ( WlDisplay, WlrBackend)
+import TinyWL.Server.Types (TinyWLServer)
 import WLR.Render.Renderer (WLR_renderer)
 #include "tinywl.h"
 
