@@ -37,11 +37,12 @@ in pkgs.mkShell {
     export WAYLAND_PROTOCOLS=${pkgs.wayland-protocols}/share/wayland-protocols
     export WAYLAND_SCANNER=${pkgs.wayland-scanner}/bin/wayland-scanner
     export WLR_RENDERER=pixman
-    
+    unset GHC_PACKAGE_PATH
+
     # Build tinywl
     echo "Building tinywl..."
     cd tinywl
-    make clean
+    make -f Makefile.shared clean
     make -f Makefile.shared
     cd ..
     
