@@ -7,6 +7,7 @@ import Foreign.C.Types (CUInt (..))
 import Foreign.Ptr (Ptr)
 import TinyWL.Compositor.Types (
     WlDisplay,
+    WlrBackend,
     WlrCompositor,
     WlrDataDeviceManager,
     WlrOutputLayout,
@@ -19,3 +20,4 @@ foreign import ccall "wlr_compositor_create" c_wlr_compositor_create :: Ptr WlDi
 foreign import ccall "wlr_subcompositor_create" c_wlr_subcompositor_create :: Ptr WlDisplay -> IO (Ptr WlrSubCompositor)
 foreign import ccall "wlr_data_device_manager_create" c_wlr_data_device_manager_create :: Ptr WlDisplay -> IO (Ptr WlrDataDeviceManager)
 foreign import ccall "wlr_output_layout_create" c_wlr_output_layout_create :: IO (Ptr WlrOutputLayout)
+foreign import ccall "wlr_backend_autocreate" c_wlr_backend_autocreate :: Ptr WlDisplay -> Ptr () -> IO (Ptr WlrBackend)

@@ -22,6 +22,9 @@ main = do
     wlr_log WLR_DEBUG "Server created"
     display <- FFI.c_wl_display_create
     _ <- Server.setWlDisplay server display
+    backend <- FFI.c_wlr_backend_autocreate display nullPtr
+    _ <- Server.setBackend server backend
+
     outputLayout <- FFI.c_wlr_output_layout_create
     wlr_log WLR_INFO $ "Output layout created: " ++ show outputLayout
     -- _ <- Server.setOutputLayout server outputLayout

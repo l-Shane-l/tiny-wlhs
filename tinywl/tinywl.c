@@ -828,7 +828,6 @@ static void server_new_xdg_surface(struct wl_listener *listener, void *data) {
 
 // Function declarations
 char* parse_arguments(int argc, char *argv[]);
-bool initialize_backend(struct tinywl_server *server);
 bool initialize_renderer(struct tinywl_server *server);
 bool initialize_allocator(struct tinywl_server *server);
 void initialize_compositor(struct tinywl_server *server);
@@ -861,7 +860,6 @@ void server_destroy(struct tinywl_server *server) {
 bool server_init(struct tinywl_server *server) {
     wlr_log_init(WLR_DEBUG, NULL);
     
-    if (!initialize_backend(server)) return false;
     if (!initialize_renderer(server)) return false;
     if (!initialize_allocator(server)) return false;
 
@@ -905,12 +903,6 @@ char* parse_arguments(int argc, char *argv[]) {
         return NULL;
     }
     return startup_cmd;
-}
-
-
-bool initialize_backend(struct tinywl_server *server) {
-    server->backend = wlr_backend_autocreate(server->wl_display, NULL);
-    return server->backend != NULL;
 }
 
 bool initialize_renderer(struct tinywl_server *server) {

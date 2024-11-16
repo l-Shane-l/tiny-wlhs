@@ -29,6 +29,9 @@ getRenderer ptr = #{peek struct tinywl_server, renderer} ptr
 getBackend :: TinyWLServerPtr -> IO (Ptr WlrBackend)
 getBackend ptr = #{peek struct tinywl_server, backend} ptr
 
+setBackend :: TinyWLServerPtr -> (Ptr WlrBackend) -> IO ()
+setBackend ptr backend = #{poke struct tinywl_server, backend} ptr backend
+
 -- Setter for cursor_mode
 setCursorMode :: TinyWLServerPtr -> CInt -> IO ()
 setCursorMode ptr mode = #{poke struct tinywl_server, cursor_mode} ptr mode
