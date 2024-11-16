@@ -25,6 +25,10 @@ setWlDisplay ptr display = #{poke struct tinywl_server, wl_display} ptr display
 getRenderer :: TinyWLServerPtr -> IO (Ptr WLR_renderer)
 getRenderer ptr = #{peek struct tinywl_server, renderer} ptr
 
+setRenderer :: TinyWLServerPtr -> (Ptr WLR_renderer) -> IO () 
+setRenderer ptr renderer = #{poke struct tinywl_server, renderer} ptr renderer
+
+
 -- Getter for backend
 getBackend :: TinyWLServerPtr -> IO (Ptr WlrBackend)
 getBackend ptr = #{peek struct tinywl_server, backend} ptr

@@ -21,3 +21,5 @@ foreign import ccall "wlr_subcompositor_create" c_wlr_subcompositor_create :: Pt
 foreign import ccall "wlr_data_device_manager_create" c_wlr_data_device_manager_create :: Ptr WlDisplay -> IO (Ptr WlrDataDeviceManager)
 foreign import ccall "wlr_output_layout_create" c_wlr_output_layout_create :: IO (Ptr WlrOutputLayout)
 foreign import ccall "wlr_backend_autocreate" c_wlr_backend_autocreate :: Ptr WlDisplay -> Ptr () -> IO (Ptr WlrBackend)
+foreign import ccall "wlr_renderer_autocreate" c_wlr_renderer_autocreate :: Ptr WlrBackend -> IO (Ptr WLR_renderer)
+foreign import ccall "wlr_renderer_init_wl_display" c_wlr_renderer_init_display :: Ptr WLR_renderer -> Ptr WlDisplay -> IO ()
