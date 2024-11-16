@@ -1,13 +1,12 @@
 module Main where
 
-import qualified TinyWL.Server.FFI as FFI
-import qualified TinyWL.Server.Server as Server
-import qualified TinyWL.Compositor.Compositor as Compositor
-import System.Environment (getArgs, setEnv)
 import Foreign.C.String
 import Foreign.Ptr
+import System.Environment (getArgs, setEnv)
+import qualified TinyWL.Compositor.Compositor as Compositor
+import qualified TinyWL.Server.FFI as FFI
+import qualified TinyWL.Server.Server as Server
 import WLR.Util.Log
-
 
 main :: IO ()
 main = do
@@ -16,7 +15,6 @@ main = do
 
     -- Add a test log message
     wlr_log WLR_INFO "Initializing TinyWL with wlhs bindings"
-    
 
     args <- getArgs
     server <- FFI.c_server_create
@@ -36,7 +34,7 @@ main = do
                     setEnv "WAYLAND_DISPLAY" socketStr
                     wlr_log WLR_INFO $ "WAYLAND_DISPLAY set to " ++ socketStr
                     case args of
-                        ("-s":cmd:_) -> do
+                        ("-s" : cmd : _) -> do
                             withCString cmd FFI.c_server_set_startup_command
                             wlr_log WLR_DEBUG $ "Startup command set: " ++ cmd
                         _ -> return ()
