@@ -7,7 +7,7 @@ import Foreign.Ptr
 import Foreign.C.Types
 import Foreign.Storable
 -- the three types below should be imported from wlhs but do not exist there
-import TinyWL.Compositor.Types ( WlDisplay, WlrBackend, WlrOutputLayout)
+import TinyWL.Compositor.Types ( WlDisplay, WlrBackend, WlrOutputLayout, WlrAllocator)
 import TinyWL.Server.Types (TinyWLServer)
 import WLR.Render.Renderer (WLR_renderer)
 #include "tinywl.h"
@@ -40,11 +40,16 @@ setBackend ptr backend = #{poke struct tinywl_server, backend} ptr backend
 setCursorMode :: TinyWLServerPtr -> CInt -> IO ()
 setCursorMode ptr mode = #{poke struct tinywl_server, cursor_mode} ptr mode
 
-setOutputLayout :: TinyWLServerPtr -> (Ptr WlrOutputLayout) -> IO()
-setOutputLayout ptr layout = #{poke struct tinywl_server, output_layout} ptr layout
 -- Getter for cursor_mode
 getCursorMode :: TinyWLServerPtr -> IO CInt
 getCursorMode ptr = #{peek struct tinywl_server, cursor_mode} ptr
 
 
+setOutputLayout :: TinyWLServerPtr -> (Ptr WlrOutputLayout) -> IO()
+setOutputLayout ptr layout = #{poke struct tinywl_server, output_layout} ptr layout
 
+getOutputLayout :: TinyWLServerPtr -> IO (Ptr WlrOutputLayout)
+getOutputLayout ptr = #{peek struct tinywl_server, output_layout} ptr
+
+setAllocator :: TinyWLServerPtr -> (Ptr WlrAllocator) -> IO ()
+setAllocator ptr allocator = #{poke struct tinywl_server, allocator} ptr allocator

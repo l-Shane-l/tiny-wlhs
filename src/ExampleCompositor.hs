@@ -27,6 +27,8 @@ main = do
     renderer <- FFI.c_wlr_renderer_autocreate backend
     _ <- Server.setRenderer server renderer
     _ <- FFI.c_wlr_renderer_init_display renderer display
+    allocator <- FFI.c_wlr_allocator_autocreate backend renderer
+    _ <- Server.setAllocator server allocator
 
     outputLayout <- FFI.c_wlr_output_layout_create
     wlr_log WLR_INFO $ "Output layout created: " ++ show outputLayout
