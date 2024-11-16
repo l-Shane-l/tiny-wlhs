@@ -9,6 +9,7 @@ import TinyWL.Compositor.Types (
     WlDisplay,
     WlrCompositor,
     WlrDataDeviceManager,
+    WlrOutputLayout,
     WlrSubCompositor,
  )
 import WLR.Render.Renderer (WLR_renderer)
@@ -17,3 +18,4 @@ import WLR.Render.Renderer (WLR_renderer)
 foreign import ccall "wlr_compositor_create" c_wlr_compositor_create :: Ptr WlDisplay -> CUInt -> Ptr WLR_renderer -> IO (Ptr WlrCompositor)
 foreign import ccall "wlr_subcompositor_create" c_wlr_subcompositor_create :: Ptr WlDisplay -> IO (Ptr WlrSubCompositor)
 foreign import ccall "wlr_data_device_manager_create" c_wlr_data_device_manager_create :: Ptr WlDisplay -> IO (Ptr WlrDataDeviceManager)
+foreign import ccall "wlr_output_layout_create" c_wlr_output_layout_create :: IO (Ptr WlrOutputLayout)

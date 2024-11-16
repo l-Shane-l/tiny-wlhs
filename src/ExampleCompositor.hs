@@ -4,6 +4,7 @@ import Foreign.C.String
 import Foreign.Ptr
 import System.Environment (getArgs, setEnv)
 import qualified TinyWL.Compositor.Compositor as Compositor
+import qualified TinyWL.Compositor.FFI as FFI
 import qualified TinyWL.Server.FFI as FFI
 import qualified TinyWL.Server.Server as Server
 import WLR.Util.Log
@@ -19,12 +20,19 @@ main = do
     args <- getArgs
     server <- FFI.c_server_create
     wlr_log WLR_DEBUG "Server created"
+    display <- FFI.c_wl_display_create
+    _ <- Server.setWlDisplay server display
+    outputLayout <- FFI.c_wlr_output_layout_create
+    wlr_log WLR_INFO $ "Output layout created: " ++ show outputLayout
+    -- _ <- Server.setOutputLayout server outputLayout
+    wlr_log WLR_INFO $ "This far"
 
     initSuccess <- FFI.c_server_init server
     if initSuccess
         then do
             wlr_log WLR_INFO "Server initialized successfully"
             wlDisplay <- Server.getWlDisplay server
+
             renderer <- Server.getRenderer server
             _ <- Compositor.initialize_compositor wlDisplay 5 renderer
             socket <- FFI.c_server_start server

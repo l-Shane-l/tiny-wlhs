@@ -6,3 +6,4 @@ data WlrCompositor
 data WlrSubCompositor
 data WlrBackend
 data WlrDataDeviceManager
+data WlrOutputLayout
