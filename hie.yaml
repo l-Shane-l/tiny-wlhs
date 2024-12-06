@@ -1,0 +1,31 @@
+cradle:
+  cabal:
+    - path: "./src/ExampleCompositor.hs"
+      component: "tiny-wlhs:exe:tiny-wlhs"
+
+    - path: "./src/TinyWL/Server/FFI.hs"
+      component: "tiny-wlhs:exe:tiny-wlhs"
+
+    - path: "./src/TinyWL/Server/Server.hs"
+      component: "tiny-wlhs:exe:tiny-wlhs"
+
+    - path: "./src/TinyWL/Server/Types.hs"
+      component: "tiny-wlhs:exe:tiny-wlhs"
+
+    - path: "./src/TinyWL/Compositor/Compositor.hs"
+      component: "tiny-wlhs:exe:tiny-wlhs"
+
+    - path: "./src/TinyWL/Compositor/FFI.hs"
+      component: "tiny-wlhs:exe:tiny-wlhs"
+
+    - path: "./src/TinyWL/Compositor/Types.hs"
+      component: "tiny-wlhs:exe:tiny-wlhs"
+
+    - path: "./src/TinyWL/KeyBindings.hs"
+      component: "tiny-wlhs:exe:tiny-wlhs"
+
+    - path: "./src/TinyWL/KeySyms.hs"
+      component: "tiny-wlhs:exe:tiny-wlhs"
+
+    - path: "./wlhs/src"
+      component: "lib:wlhs-bindings"
