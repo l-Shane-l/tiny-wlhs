@@ -23,8 +23,11 @@ executable tiny-wlhs
                  ,    TinyWL.Compositor.Compositor
                  ,    TinyWL.Compositor.FFI
                  ,    TinyWL.Compositor.Types
+                 ,    TinyWL.KeyBindings
+                 ,    TinyWL.KeySyms
     build-depends:    base ^>=4.18.2.1
                  ,    unix
+                 ,    process
                  ,    wlhs-bindings
 
     hs-source-dirs:   src
