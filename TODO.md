@@ -2,15 +2,28 @@
 
 ## Project Goal
 
-The goal is to create a total haskell implementation of tinywl that uses haskell bindings, 
+A wayland compositor controllable and customizable in Haskell
 
 ## Current Approach
 
-The project has been set up to run using wlhs and tinywl. 
+The project currently has a feature set similar to tinywl with the addition of keybindings. The long term goal is to approach feature parity with a project like sway.
 
-Currently a it works but by calling a series of FFI from the c in tinywl, All of this is mainly in Server.
-The idea id to move more and more into haskell from the C side. 
+## Features
 
-Right now the aim is to move all of server_init into a haskell implementation even if this haskell is making FFI calls to the TinyWL.
+The following is a list of features under development
 
-The ideal to gain increaded access to the TinyWL C code so we can concert only what we need into haskell.
+### keybindings
+
+Keybindings exist in a functional state with the option to add more in on the C side or manage them in haskell.
+
+The next steps for keybindings will be investigating adding haskell bindings for xkbcommon
+
+### Window management
+
+At the ability to have multiple screens and cycle through configurations
+
+### App support
+
+Adding the ability to use applications like dmenu and other quality of life apps designed to work with tiling managers.
+
+### Multi Screen support
