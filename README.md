@@ -1,130 +1,138 @@
 # TinyWL Haskell Implementation
 
 ## Project Overview
-This project aims to create a total Haskell implementation of TinyWL (Tiny Wayland Compositor) using Haskell bindings for wlroots. 
-If successful a user will be able to create a Wayland compostitor using this library using only haskell,
 
-## Current Status
-Please check [TODO.md](TODO.md)
+A Wayland compositor written in Haskell, providing a configurable and programmable window management system. This project implements the TinyWL reference compositor with Haskell bindings, allowing for dynamic configuration and control through Haskell.
+
+## Features
+
+- Wayland compositor functionality with wlroots backend
+- Configurable key bindings through Haskell
+- Window management (move, resize, focus)
+- Dynamic terminal spawning
+- Window cycling
+
+More features coming, the intention is to get feature parity with something like sway
 
 ## System Architecture
 
-### Component Overview
-
-The following diagram shows the main components of our Wayland compositor and how they relate to each other:
+The system is organized in multiple layers, providing a clean separation between Haskell control logic and low-level Wayland functionality:
 
 ```mermaid
 graph TB
     subgraph "Haskell Layer"
         A[Haskell Main]
-        B[TinyWL.FFI]
+        B[TinyWL Server]
+        H[Keybinding Handler]
     end
-
     subgraph "Bindings Layer"
         C[wlhs - Wayland Haskell Bindings]
     end
-
     subgraph "C Layer"
         D[TinyWL C Server]
+        I[Key Event Handler]
     end
-
     subgraph "System Layer"
         E[wlroots]
         F[Wayland Protocol]
         G[Linux Kernel / Display Server]
     end
-
-    A -->|uses| B
-    A -->|uses| C
+    A -->|starts| B
+    B -->|uses| C
+    B -->|configures| H
+    H <-->|callback| I
     B -->|FFI calls| D
     C -->|binds to| E
     D -->|uses| E
+    D -->|dispatches to| I
     E -->|implements| F
     F -->|interacts with| G
 
     classDef haskell fill:#f9f,stroke:#333,stroke-width:2px;
     classDef c fill:#9cf,stroke:#333,stroke-width:2px;
     classDef system fill:#fcf,stroke:#333,stroke-width:2px;
-    class A,B haskell;
-    class C,D c;
+    class A,B,H haskell;
+    class C,D,I c;
     class E,F,G system;
 ```
 
-### Operational Flow
+### Layer Description
 
-This sequence diagram illustrates how these components interact during the lifecycle of the compositor:
-
-```mermaid
-sequenceDiagram
-    participant Haskell as Haskell Main
-    participant WLHS as wlhs (Wayland Haskell bindings)
-    participant FFI as FFI Layer
-    participant C as C TinyWL Server
-    participant WLR as wlroots
-    participant System as System/OS
-
-    Haskell->>WLHS: Use Wayland Haskell bindings
-    WLHS->>WLR: Initialize logging (wlr_log_init)
-    Haskell->>FFI: Call c_server_create
-    FFI->>C: server_create()
-    C-->>FFI: Return server pointer
-    FFI-->>Haskell: Return server pointer
-
-    Haskell->>FFI: Call c_server_init
-    FFI->>C: server_init()
-    C->>WLR: Initialize wlroots
-    WLR->>System: Set up Wayland display
-    System-->>WLR: Return display info
-    WLR-->>C: Return init status
-    C-->>FFI: Return init success status
-    FFI-->>Haskell: Return init success status
-
-    Haskell->>FFI: Call c_server_start
-    FFI->>C: server_start()
-    C->>System: Create Wayland socket
-    System-->>C: Return socket name
-    C-->>FFI: Return socket name
-    FFI-->>Haskell: Return socket name
-
-    Haskell->>System: Set WAYLAND_DISPLAY environment variable
-
-    alt Startup command provided
-        Haskell->>FFI: Call c_server_set_startup_command
-        FFI->>C: server_set_startup_command()
-        C->>System: Store startup command
-    end
-
-    Haskell->>FFI: Call c_server_run
-    FFI->>C: server_run()
-    C->>WLR: Start Wayland event loop
-    WLR->>System: Handle input/output events
-
-    Note over System: Wayland compositor running
-
-    Haskell->>WLHS: Log messages via wlr_log
-    WLHS->>WLR: Pass log messages
-
-    Haskell->>FFI: Call c_server_destroy
-    FFI->>C: server_destroy()
-    C->>WLR: Cleanup wlroots resources
-    C->>System: Close Wayland socket
-```
+- **Haskell Layer**: High-level control and configuration
+- **Bindings Layer**: Wayland protocol bindings for Haskell
+- **C Layer**: Core compositor functionality
+- **System Layer**: System-level Wayland and display server interaction
 
 ## Getting Started
-1. Ensure you have the submodules cloned down `git clone --recurse-submodules https://github.com/l-Shane-l/tiny-wlhs.git`
-2. I created a shell.nix, you should be able to simply run `nix-shell` 
-3. then `cabal run` 
-4. tinywl will create a window you can play around with.
-    - alt left click to move the window around and alt right click to resize it.
 
-#### Note
-- I ran created and tested this on a Debian laptop with xmonad, please let me know if you run into issues on other configurations
+### Prerequisites
+
+- Nix package manager (for development environment)
+- Git (for source code management)
+
+### Installation
+
+1. Clone the repository with submodules:
+
+```bash
+git clone --recurse-submodules https://github.com/l-Shane-l/tiny-wlhs.git
+```
+
+2. Set up the development environment:
+
+```bash
+nix-shell  # Or use direnv: direnv allow
+```
+
+3. Build and run:
+
+```bash
+cabal run
+```
+
+You can also pass an argument of a program to start with the -s flag.
+
+`cabal run tiny-wlhs -- s "kitty"`
+
+here "kitty" is the terminal emulator I use
+
+### Basic Usage
+
+Default key bindings:
+
+- `Alt + Left Click`: Move window
+- `Alt + Right Click`: Resize window
+- `Alt + Esc` or `Alt + C`: Close server
+- `Alt + s`: Open new terminal (configurable, default: kitty)
+- `Alt + d`: Cycle between windows
+
+### Configuration
+
+Key bindings can be modified in:
+
+- Terminal program: `ExampleCompositor.hs` (line 82)
+- Window cycling: `tinywl.c` (line 104)
+
+## Development Status
+
+See [TODO.md](TODO.md) for current development status and planned features.
 
 ## Contributing
-We welcome contributions to this project. This project is in its infancy however you can find an aspirational contrib guide here [CONTRIBUTING.md](CONTRIBUTING.md). At this early stage contributing won't be as strict as outlined; the only requirement will be a PR that moves towards the stated goals.
+
+While the project is in early stages, contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+## Known Issues
+
+- Some key combinations may not be available on certain system configurations
+- Tested primarily on Debian with xmonad; other configurations may need adjustment
 
 ## License
-[LICENSE](LICENSE)
+
+This project is licensed under [LICENSE](LICENSE)
 
 ## Contact
-The best way to reach me is with an email to shane@peregrinum.dev
+
+For questions or suggestions:
+
+- Email: shane@peregrinum.dev
+- Issues: GitHub issue tracker
