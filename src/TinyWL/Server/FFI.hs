@@ -16,6 +16,9 @@ foreign import ccall "server_init" c_server_init :: Ptr TinyWLServer -> IO Bool
 foreign import ccall "server_start" c_server_start :: Ptr TinyWLServer -> IO CString
 foreign import ccall "server_run" c_server_run :: Ptr TinyWLServer -> IO ()
 foreign import ccall "server_set_startup_command" c_server_set_startup_command :: CString -> IO ()
+foreign import ccall "set_keybinding_handler" c_set_keybinding_handler :: Ptr TinyWLServer -> FunPtr (CUInt -> IO ()) -> IO ()
+
+foreign import ccall "wl_display_terminate" c_wl_display_terminate :: Ptr WlDisplay -> IO ()
 
 foreign import ccall "wl_display_create" c_wl_display_create :: IO (Ptr WlDisplay)
 

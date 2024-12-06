@@ -8,3 +8,4 @@ data WlrBackend
 data WlrDataDeviceManager
 data WlrOutputLayout
 data WlrAllocator
+data WlrRenderer
