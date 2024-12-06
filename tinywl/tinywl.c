@@ -828,11 +828,6 @@ static void server_new_xdg_surface(struct wl_listener *listener, void *data) {
 
 // Function declarations
 char* parse_arguments(int argc, char *argv[]);
-bool initialize_wl_display(struct tinywl_server *server);
-bool initialize_backend(struct tinywl_server *server);
-bool initialize_renderer(struct tinywl_server *server);
-bool initialize_allocator(struct tinywl_server *server);
-void initialize_compositor(struct tinywl_server *server);
 void initialize_output_layout(struct tinywl_server *server);
 void initialize_scene(struct tinywl_server *server);
 void initialize_xdg_shell(struct tinywl_server *server);
@@ -862,11 +857,6 @@ void server_destroy(struct tinywl_server *server) {
 bool server_init(struct tinywl_server *server) {
     wlr_log_init(WLR_DEBUG, NULL);
     
-    if (!initialize_wl_display(server)) return false;
-    if (!initialize_backend(server)) return false;
-    if (!initialize_renderer(server)) return false;
-    if (!initialize_allocator(server)) return false;
-
     initialize_output_layout(server);
     initialize_scene(server);
     initialize_xdg_shell(server);
@@ -907,30 +897,6 @@ char* parse_arguments(int argc, char *argv[]) {
         return NULL;
     }
     return startup_cmd;
-}
-
-bool initialize_wl_display(struct tinywl_server *server) {
-    server->wl_display = wl_display_create();
-    return server->wl_display != NULL;
-}
-
-bool initialize_backend(struct tinywl_server *server) {
-    server->backend = wlr_backend_autocreate(server->wl_display, NULL);
-    return server->backend != NULL;
-}
-
-bool initialize_renderer(struct tinywl_server *server) {
-    server->renderer = wlr_renderer_autocreate(server->backend);
-    if (server->renderer == NULL) {
-        return false;
-    }
-    wlr_renderer_init_wl_display(server->renderer, server->wl_display);
-    return true;
-}
-
-bool initialize_allocator(struct tinywl_server *server) {
-    server->allocator = wlr_allocator_autocreate(server->backend, server->renderer);
-    return server->allocator != NULL;
 }
 
 

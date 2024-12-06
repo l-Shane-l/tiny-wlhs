@@ -7,9 +7,8 @@ import Foreign.Ptr
 import Foreign.C.Types
 import Foreign.Storable
 -- the three types below should be imported from wlhs but do not exist there
-import TinyWL.Compositor.Types ( WlDisplay, WlrBackend)
+import TinyWL.Compositor.Types ( WlDisplay, WlrBackend, WlrOutputLayout, WlrRenderer, WlrAllocator)
 import TinyWL.Server.Types (TinyWLServer)
-import WLR.Render.Renderer (WLR_renderer)
 #include "tinywl.h"
 
 type TinyWLServerPtr = Ptr TinyWLServer
@@ -18,13 +17,23 @@ type TinyWLServerPtr = Ptr TinyWLServer
 getWlDisplay :: TinyWLServerPtr -> IO (Ptr WlDisplay)
 getWlDisplay ptr = #{peek struct tinywl_server, wl_display} ptr
 
+setWlDisplay :: TinyWLServerPtr -> (Ptr WlDisplay) -> IO ()
+setWlDisplay ptr display = #{poke struct tinywl_server, wl_display} ptr display
+
 -- Getter for renderer
-getRenderer :: TinyWLServerPtr -> IO (Ptr WLR_renderer)
+getRenderer :: TinyWLServerPtr -> IO (Ptr WlrRenderer)
 getRenderer ptr = #{peek struct tinywl_server, renderer} ptr
+
+setRenderer :: TinyWLServerPtr -> (Ptr WlrRenderer) -> IO () 
+setRenderer ptr renderer = #{poke struct tinywl_server, renderer} ptr renderer
+
 
 -- Getter for backend
 getBackend :: TinyWLServerPtr -> IO (Ptr WlrBackend)
 getBackend ptr = #{peek struct tinywl_server, backend} ptr
+
+setBackend :: TinyWLServerPtr -> (Ptr WlrBackend) -> IO ()
+setBackend ptr backend = #{poke struct tinywl_server, backend} ptr backend
 
 -- Setter for cursor_mode
 setCursorMode :: TinyWLServerPtr -> CInt -> IO ()
@@ -34,4 +43,12 @@ setCursorMode ptr mode = #{poke struct tinywl_server, cursor_mode} ptr mode
 getCursorMode :: TinyWLServerPtr -> IO CInt
 getCursorMode ptr = #{peek struct tinywl_server, cursor_mode} ptr
 
--- Add more getters and setters as needed
+
+setOutputLayout :: TinyWLServerPtr -> (Ptr WlrOutputLayout) -> IO ()
+setOutputLayout ptr layout = #{poke struct tinywl_server, output_layout} ptr layout
+
+getOutputLayout :: TinyWLServerPtr -> IO (Ptr WlrOutputLayout)
+getOutputLayout ptr = #{peek struct tinywl_server, output_layout} ptr
+
+setAllocator :: TinyWLServerPtr -> (Ptr WlrAllocator) -> IO ()
+setAllocator ptr allocator = #{poke struct tinywl_server, allocator} ptr allocator

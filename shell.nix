@@ -1,7 +1,8 @@
 { system ? builtins.currentSystem }:
 let
   pkgs = import ./nix/nixpkgs.nix { inherit system; };
-in pkgs.mkShell {
+in
+pkgs.mkShell {
   buildInputs = with pkgs; [
     wayland
     wayland-protocols
@@ -32,6 +33,7 @@ in pkgs.mkShell {
     gnumake
     ghc
     cabal-install
+    haskell-language-server
   ];
   shellHook = ''
     export WAYLAND_PROTOCOLS=${pkgs.wayland-protocols}/share/wayland-protocols
