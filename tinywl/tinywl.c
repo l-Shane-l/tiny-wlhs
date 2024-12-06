@@ -1,4 +1,5 @@
 #define _POSIX_C_SOURCE 200112L
+#include "tinywl.h"
 #include <assert.h>
 #include <getopt.h>
 #include <stdbool.h>
@@ -25,82 +26,6 @@
 #include <wlr/types/wlr_xdg_shell.h>
 #include <wlr/util/log.h>
 #include <xkbcommon/xkbcommon.h>
-
-/* For brevity's sake, struct members are annotated where they are used. */
-enum tinywl_cursor_mode {
-  TINYWL_CURSOR_PASSTHROUGH,
-  TINYWL_CURSOR_MOVE,
-  TINYWL_CURSOR_RESIZE,
-};
-
-struct tinywl_server {
-  struct wl_display *wl_display;
-  struct wlr_backend *backend;
-  struct wlr_renderer *renderer;
-  struct wlr_allocator *allocator;
-  struct wlr_scene *scene;
-  struct wlr_scene_output_layout *scene_layout;
-
-  struct wlr_xdg_shell *xdg_shell;
-  struct wl_listener new_xdg_surface;
-  struct wl_list toplevels;
-
-  struct wlr_cursor *cursor;
-  struct wlr_xcursor_manager *cursor_mgr;
-  struct wl_listener cursor_motion;
-  struct wl_listener cursor_motion_absolute;
-  struct wl_listener cursor_button;
-  struct wl_listener cursor_axis;
-  struct wl_listener cursor_frame;
-
-  struct wlr_seat *seat;
-  struct wl_listener new_input;
-  struct wl_listener request_cursor;
-  struct wl_listener request_set_selection;
-  struct wl_list keyboards;
-  enum tinywl_cursor_mode cursor_mode;
-  struct tinywl_toplevel *grabbed_toplevel;
-  double grab_x, grab_y;
-  struct wlr_box grab_geobox;
-  uint32_t resize_edges;
-
-  struct wlr_output_layout *output_layout;
-  struct wl_list outputs;
-  struct wl_listener new_output;
-};
-
-struct tinywl_output {
-  struct wl_list link;
-  struct tinywl_server *server;
-  struct wlr_output *wlr_output;
-  struct wl_listener frame;
-  struct wl_listener request_state;
-  struct wl_listener destroy;
-};
-
-struct tinywl_toplevel {
-  struct wl_list link;
-  struct tinywl_server *server;
-  struct wlr_xdg_toplevel *xdg_toplevel;
-  struct wlr_scene_tree *scene_tree;
-  struct wl_listener map;
-  struct wl_listener unmap;
-  struct wl_listener destroy;
-  struct wl_listener request_move;
-  struct wl_listener request_resize;
-  struct wl_listener request_maximize;
-  struct wl_listener request_fullscreen;
-};
-
-struct tinywl_keyboard {
-  struct wl_list link;
-  struct tinywl_server *server;
-  struct wlr_keyboard *wlr_keyboard;
-
-  struct wl_listener modifiers;
-  struct wl_listener key;
-  struct wl_listener destroy;
-};
 
 static void focus_toplevel(struct tinywl_toplevel *toplevel,
                            struct wlr_surface *surface) {
@@ -163,7 +88,6 @@ static void keyboard_handle_modifiers(struct wl_listener *listener,
   wlr_seat_keyboard_notify_modifiers(keyboard->server->seat,
                                      &keyboard->wlr_keyboard->modifiers);
 }
-
 static bool handle_keybinding(struct tinywl_server *server, xkb_keysym_t sym) {
   /*
    * Here we handle compositor keybindings. This is when the compositor is
@@ -172,11 +96,12 @@ static bool handle_keybinding(struct tinywl_server *server, xkb_keysym_t sym) {
    *
    * This function assumes Alt is held down.
    */
+
   switch (sym) {
   case XKB_KEY_Escape:
     wl_display_terminate(server->wl_display);
     break;
-  case XKB_KEY_F1:
+  case XKB_KEY_d:
     /* Cycle to the next toplevel */
     if (wl_list_length(&server->toplevels) < 2) {
       break;
@@ -186,6 +111,11 @@ static bool handle_keybinding(struct tinywl_server *server, xkb_keysym_t sym) {
     focus_toplevel(next_toplevel, next_toplevel->xdg_toplevel->base->surface);
     break;
   default:
+ 
+        if (server->keybinding_handler) {
+            wlr_log(WLR_DEBUG, "Calling custom handler");
+            server->keybinding_handler(sym);
+        }
     return false;
   }
   return true;
@@ -207,10 +137,11 @@ static void keyboard_handle_key(struct wl_listener *listener, void *data) {
 
   bool handled = false;
   uint32_t modifiers = wlr_keyboard_get_modifiers(keyboard->wlr_keyboard);
-  if ((modifiers & WLR_MODIFIER_ALT) &&
+  if ((modifiers & global_modifier) &&
       event->state == WL_KEYBOARD_KEY_STATE_PRESSED) {
     /* If alt is held down and this button was _pressed_, we attempt to
      * process it as a compositor keybinding. */
+
     for (int i = 0; i < nsyms; i++) {
       handled = handle_keybinding(server, syms[i]);
     }
@@ -223,6 +154,11 @@ static void keyboard_handle_key(struct wl_listener *listener, void *data) {
                                  event->state);
   }
 }
+
+void set_keybinding_handler(struct tinywl_server *server, keybinding_handler_t handler) {
+    server->keybinding_handler = handler;
+}
+
 
 static void keyboard_handle_destroy(struct wl_listener *listener, void *data) {
   /* This event is raised by the keyboard base wlr_input_device to signal
@@ -901,7 +837,7 @@ char* parse_arguments(int argc, char *argv[]) {
 
 
 void initialize_output_layout(struct tinywl_server *server) {
-    server->output_layout = wlr_output_layout_create();
+    // server->output_layout = wlr_output_layout_create();
     wl_list_init(&server->outputs);
     server->new_output.notify = server_new_output;
     wl_signal_add(&server->backend->events.new_output, &server->new_output);

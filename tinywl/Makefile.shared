@@ -6,7 +6,7 @@ LIBS=\
 	 $(shell pkg-config --cflags --libs xkbcommon)
 
 # Add -fPIC for position-independent code
-CFLAGS += -fPIC
+CFLAGS += -fPIC -g -ggdb -O1
 
 # Output file is now a shared library
 OUTPUT = libtinywl.so
