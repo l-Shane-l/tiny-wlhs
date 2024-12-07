@@ -96,15 +96,58 @@ cabal run
 
 Default key bindings:
 
-- `Alt + Left Click`: Move window
-- `Alt + Right Click`: Resize window
-- `Alt + Esc` or `Alt + C`: Close server
-- `Alt + s`: Open new terminal (configurable, default: kitty)
-- `Alt + d`: Cycle between windows
+- `Mod + Left Click`: Move window
+- `Mod + Right Click`: Resize window
+- `Mod + Esc` or `Alt + C`: Close server
+- `Mod + s`: Open new terminal (configurable, default: kitty)
+- `Mod + d`: Cycle between windows
 
 ### Configuration
 
-You can make all customizations in Config.hs, this this file for more details
+You can make all customizations in Config.hs
+
+In appConfig you can set:
+
+- Log Level
+- Application to run on start
+- The Mod Key
+- Terminal Emulator
+
+```
+appConfig :: Config -- Customize your app here, to help I placed the options in the comments
+appConfig =
+    Config
+        { logLevel = WLR_DEBUG -- WLR_INFO | WLR_DEBUG | WLR_SILENT | WLR_ERROR
+        , startupApplication = "" -- can be any app that works with wayland, Leave blank for no startup app
+        , modKey = ModAlt -- ModAlt | ModCtrl | ModLogo | ModShift
+        , terminalEmulator = "kitty" -- I use kitty as my emulator, alacritty is also a popular choice
+        }
+```
+
+You can also set up your own Key even listeners to do any of the following:
+
+- spawn any application or process you like
+- interact and control the compositor by calling FFI and Haskell functions in the LibTinyWLHS library
+
+```
+customKeybindings :: Ptr WlDisplay -> IO (FunPtr (CUInt -> IO ()))
+customKeybindings display = do
+    let handler :: CUInt -> IO ()
+        handler sym = do
+            -- Add your custom key event handler heres
+            wlr_log WLR_INFO $ "Handler called with sym: " ++ show sym -- This will long as an int and key pressed while the mod key is held down
+            when (sym == keySymToInt KEY_s) $ do
+                -- simple match to key events defined in LibTinyWLHS.KeyBinding.KeySyms
+                wlr_log WLR_INFO "Alt+s pressed, spawning a terminal emulator"
+                _ <- spawnProcess (terminalEmulator appConfig) [] -- for this key event a process is spawned in Haskell
+                pure ()
+            when (sym == keySymToInt KEY_c) $ do
+                -- the key Events just show up here as ints so you can also match against a raw int
+                wlr_log WLR_INFO "Alt + c pressed closing server"
+                FFI.c_wl_display_terminate display -- for this event we call a Wayland FFI function
+                pure ()
+    mkKeybindingHandler handler
+```
 
 ## Development Status
 
