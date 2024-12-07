@@ -79,7 +79,7 @@ main = do
                             wlr_log WLR_INFO $ "Handler called with sym: " ++ show sym
                             when (sym == keySymToInt KEY_s) $ do
                                 wlr_log WLR_INFO "Alt+s pressed, spawning terminal"
-                                _ <- spawnProcess "kitty" []
+                                _ <- spawnProcess "xterm" []
                                 pure ()
                             when (sym == keySymToInt KEY_c) $ do
                                 wlr_log WLR_INFO "Alt + c pressed closing server"

@@ -92,9 +92,9 @@ cabal run
 
 You can also pass an argument of a program to start with the -s flag.
 
-`cabal run tiny-wlhs -- s "kitty"`
+`cabal run tiny-wlhs -- s "xterm"`
 
-here "kitty" is the terminal emulator I use
+here "xterm" is app to start
 
 ### Basic Usage
 
@@ -103,13 +103,14 @@ Default key bindings:
 - `Alt + Left Click`: Move window
 - `Alt + Right Click`: Resize window
 - `Alt + Esc` or `Alt + C`: Close server
-- `Alt + s`: Open new terminal (configurable, default: kitty)
+- `Alt + s`: Open new terminal (configurable, default: xterm)
 - `Alt + d`: Cycle between windows
 
 ### Configuration
 
 Key bindings can be modified in:
 
+- Set the mode Key: `ExampleCompositor.hs` (line 77)
 - Terminal program: `ExampleCompositor.hs` (line 82)
 - Window cycling: `tinywl.c` (line 104)
 
