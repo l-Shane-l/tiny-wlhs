@@ -16,15 +16,17 @@ common warnings
 
 executable tiny-wlhs
     import:           warnings
-    main-is:          ExampleCompositor.hs
-    other-modules:    TinyWL.Server.FFI
-                 ,    TinyWL.Server.Server
-                 ,    TinyWL.Server.Types
-                 ,    TinyWL.Compositor.Compositor
-                 ,    TinyWL.Compositor.FFI
-                 ,    TinyWL.Compositor.Types
-                 ,    TinyWL.KeyBindings
-                 ,    TinyWL.KeySyms
+    main-is:          Main.hs
+    other-modules:    Config
+                 ,    Setup
+                 ,    LibTinyWLHS.Server.FFI
+                 ,    LibTinyWLHS.Server.Server
+                 ,    LibTinyWLHS.Server.Types
+                 ,    LibTinyWLHS.Compositor.Compositor
+                 ,    LibTinyWLHS.Compositor.FFI
+                 ,    LibTinyWLHS.Compositor.Types
+                 ,    LibTinyWLHS.KeyBinding.KeyBindings
+                 ,    LibTinyWLHS.KeyBinding.KeySyms
     build-depends:    base ^>=4.18.2.1
                  ,    unix
                  ,    process

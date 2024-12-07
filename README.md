@@ -4,6 +4,8 @@
 
 A Wayland compositor written in Haskell, providing a configurable and programmable window management system. This project implements the TinyWL reference compositor with Haskell bindings, allowing for dynamic configuration and control through Haskell.
 
+The app can be configured in Config.hs
+
 ## Features
 
 - Wayland compositor functionality with wlroots backend
@@ -90,12 +92,6 @@ nix-shell  # Or use direnv: direnv allow
 cabal run
 ```
 
-You can also pass an argument of a program to start with the -s flag.
-
-`cabal run tiny-wlhs -- s "kitty"`
-
-here "kitty" is the terminal emulator I use
-
 ### Basic Usage
 
 Default key bindings:
@@ -108,10 +104,7 @@ Default key bindings:
 
 ### Configuration
 
-Key bindings can be modified in:
-
-- Terminal program: `ExampleCompositor.hs` (line 82)
-- Window cycling: `tinywl.c` (line 104)
+You can make all customizations in Config.hs, this this file for more details
 
 ## Development Status
 
