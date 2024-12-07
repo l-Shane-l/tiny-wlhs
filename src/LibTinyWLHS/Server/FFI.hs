@@ -1,14 +1,14 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
 
-module TinyWL.Server.FFI where
+module LibTinyWLHS.Server.FFI where
 
 import Foreign.C.String
 import Foreign.C.Types
 import Foreign.Marshal.Array (newArray)
 import Foreign.Ptr
-import TinyWL.Compositor.Types (WlDisplay)
+import LibTinyWLHS.Compositor.Types (WlDisplay)
 
-import TinyWL.Server.Types (TinyWLServer)
+import LibTinyWLHS.Server.Types (TinyWLServer)
 
 foreign import ccall "server_create" c_server_create :: IO (Ptr TinyWLServer)
 foreign import ccall "server_destroy" c_server_destroy :: Ptr TinyWLServer -> IO ()

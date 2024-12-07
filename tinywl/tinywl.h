@@ -1,6 +1,10 @@
 #ifndef TINYWL_H
 #define TINYWL_H
 
+#ifndef WLR_USE_UNSTABLE
+#define WLR_USE_UNSTABLE
+#endif
+
 #include <stdbool.h>
 #include <stdint.h>
 #include <wayland-server-core.h>

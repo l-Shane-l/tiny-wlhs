@@ -1,11 +1,11 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
 
-module TinyWL.Compositor.FFI where
+module LibTinyWLHS.Compositor.FFI where
 
 import Foreign.C.String ()
 import Foreign.C.Types (CUInt (..))
 import Foreign.Ptr (Ptr)
-import TinyWL.Compositor.Types (
+import LibTinyWLHS.Compositor.Types (
     WlDisplay,
     WlrAllocator,
     WlrBackend,

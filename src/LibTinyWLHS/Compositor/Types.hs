@@ -1,4 +1,4 @@
-module TinyWL.Compositor.Types where
+module LibTinyWLHS.Compositor.Types where
 
 -- the five below are temporary and should be imported from wlhs like WLR_renderer is
 data WlDisplay
