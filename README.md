@@ -18,7 +18,7 @@ More features coming, the intention is to get feature parity with something like
 
 ## DEMO
 
-![Example usage](./document/output.gif)
+![Example usage](./documents/output.gif)
 
 ## System Architecture
 
