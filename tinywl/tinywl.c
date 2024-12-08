@@ -27,7 +27,7 @@
 #include <wlr/util/log.h>
 #include <xkbcommon/xkbcommon.h>
 
-static void focus_toplevel(struct tinywl_toplevel *toplevel,
+void focus_toplevel(struct tinywl_toplevel *toplevel,
                            struct wlr_surface *surface) {
   /* Note: this function only deals with keyboard focus. */
   if (toplevel == NULL) {
@@ -88,6 +88,16 @@ static void keyboard_handle_modifiers(struct wl_listener *listener,
   wlr_seat_keyboard_notify_modifiers(keyboard->server->seat,
                                      &keyboard->wlr_keyboard->modifiers);
 }
+
+bool  cycle_windows(struct tinywl_server *server){
+   if (wl_list_length(&server->toplevels) < 2) {
+      return false;
+    }
+    struct tinywl_toplevel *next_toplevel =
+        wl_container_of(server->toplevels.prev, next_toplevel, link);
+    focus_toplevel(next_toplevel, next_toplevel->xdg_toplevel->base->surface);  
+    return true;
+}
 static bool handle_keybinding(struct tinywl_server *server, xkb_keysym_t sym) {
   /*
    * Here we handle compositor keybindings. This is when the compositor is
@@ -101,15 +111,13 @@ static bool handle_keybinding(struct tinywl_server *server, xkb_keysym_t sym) {
   case XKB_KEY_Escape:
     wl_display_terminate(server->wl_display);
     break;
-  case XKB_KEY_d:
+  case XKB_KEY_F1:
+       bool result = cycle_windows(server);
     /* Cycle to the next toplevel */
-    if (wl_list_length(&server->toplevels) < 2) {
-      break;
-    }
-    struct tinywl_toplevel *next_toplevel =
-        wl_container_of(server->toplevels.prev, next_toplevel, link);
-    focus_toplevel(next_toplevel, next_toplevel->xdg_toplevel->base->surface);
-    break;
+       if(!result){
+        wlr_log(WLR_INFO, "Window Cycle Failed, Not enought windows");
+      }
+       break;
   default:
  
         if (server->keybinding_handler) {

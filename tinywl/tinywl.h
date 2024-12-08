@@ -15,8 +15,6 @@
 
 typedef void (*keybinding_handler_t)(xkb_keysym_t sym);
 
-
-
 static uint32_t global_modifier = WLR_MODIFIER_LOGO; // Default
 
 void set_modifier_key(uint32_t modifier) {
@@ -120,6 +118,8 @@ bool server_init(struct tinywl_server *server);
 const char *server_start(struct tinywl_server *server);
 void server_run(struct tinywl_server *server);
 void server_set_startup_command(const char *cmd);
+bool  cycle_windows(struct tinywl_server *server);
+
 
 
 
