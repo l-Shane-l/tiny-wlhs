@@ -7,6 +7,7 @@ import LibTinyWLHS.Compositor.Types
 import LibTinyWLHS.KeyBinding.KeyBindings
 import LibTinyWLHS.KeyBinding.KeySyms
 import qualified LibTinyWLHS.Server.FFI as FFI
+import LibTinyWLHS.Server.Types (TinyWLServer)
 import System.Process (spawnProcess)
 import WLR.Util.Log
 
@@ -26,8 +27,8 @@ appConfig =
         , terminalEmulator = "kitty" -- I use kitty as my emulator, alacritty is also a popular choice
         }
 
-customKeybindings :: Ptr WlDisplay -> IO (FunPtr (CUInt -> IO ()))
-customKeybindings display = do
+customKeybindings :: Ptr WlDisplay -> Ptr TinyWLServer -> IO (FunPtr (CUInt -> IO ()))
+customKeybindings display server = do
     let handler :: CUInt -> IO ()
         handler sym = do
             -- Add your custom key event handler heres
@@ -41,5 +42,11 @@ customKeybindings display = do
                 -- the key Events just show up here as ints so you can also match against a raw int
                 wlr_log WLR_INFO "Alt + c pressed closing server"
                 FFI.c_wl_display_terminate display -- for this event we call a Wayland FFI function
+                pure ()
+            when (sym == keySymToInt KEY_d) $ do
+                wlr_log WLR_INFO "Alt+x pressed, cycling windows"
+                result <- FFI.c_cycle_windows server
+                (if result then wlr_log WLR_INFO "window cycled" else wlr_log WLR_INFO "Window cycling failed, Only one window")
+
                 pure ()
     mkKeybindingHandler handler
