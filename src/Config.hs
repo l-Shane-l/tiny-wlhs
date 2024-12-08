@@ -35,16 +35,17 @@ customKeybindings display server = do
             wlr_log WLR_INFO $ "Handler called with sym: " ++ show sym -- This will long as an int and key pressed while the mod key is held down
             when (sym == keySymToInt KEY_s) $ do
                 -- simple match to key events defined in LibTinyWL.KeyBinding.KeySyms
-                wlr_log WLR_INFO "Alt+s pressed, spawning a terminal emulator"
+                wlr_log WLR_INFO "Mod + s pressed, spawning a terminal emulator"
                 _ <- spawnProcess (terminalEmulator appConfig) [] -- for this key event a process is spawned in Haskell
                 pure ()
             when (sym == keySymToInt KEY_c) $ do
                 -- the key Events just show up here as ints so you can also match against a raw int
-                wlr_log WLR_INFO "Alt + c pressed closing server"
+                wlr_log WLR_INFO "Mod + c pressed closing server"
                 FFI.c_wl_display_terminate display -- for this event we call a Wayland FFI function
                 pure ()
-            when (sym == keySymToInt KEY_d) $ do
-                wlr_log WLR_INFO "Alt+x pressed, cycling windows"
+            when (sym == keySymToInt KEY_d || sym == keySymToInt KEY_v) $ do
+                -- You can also use logical OR
+                wlr_log WLR_INFO "Mod + d pressed, cycling windows"
                 result <- FFI.c_cycle_windows server
                 (if result then wlr_log WLR_INFO "window cycled" else wlr_log WLR_INFO "Window cycling failed, Only one window")
 

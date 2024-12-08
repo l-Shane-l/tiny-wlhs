@@ -16,6 +16,10 @@ The app can be configured in Config.hs
 
 More features coming, the intention is to get feature parity with something like sway
 
+## DEMO
+
+![Example usage](./document/output.gif)
+
 ## System Architecture
 
 The system is organized in multiple layers, providing a clean separation between Haskell control logic and low-level Wayland functionality:
@@ -100,7 +104,7 @@ Default key bindings:
 - `Mod + Right Click`: Resize window
 - `Mod + Esc` or `Alt + C`: Close server
 - `Mod + s`: Open new terminal (configurable, default: kitty)
-- `Mod + d`: Cycle between windows
+- `Mod + d` or `Mod + v` or `Mod + F1`: Cycle between windows
 
 ### Configuration
 
@@ -128,23 +132,31 @@ You can also set up your own Key even listeners to do any of the following:
 
 - spawn any application or process you like
 - interact and control the compositor by calling FFI and Haskell functions in the LibTinyWLHS library
+- change current key bindings to your preference
 
 ```
-customKeybindings :: Ptr WlDisplay -> IO (FunPtr (CUInt -> IO ()))
-customKeybindings display = do
+customKeybindings :: Ptr WlDisplay -> Ptr TinyWLServer -> IO (FunPtr (CUInt -> IO ()))
+customKeybindings display server = do
     let handler :: CUInt -> IO ()
         handler sym = do
             -- Add your custom key event handler heres
             wlr_log WLR_INFO $ "Handler called with sym: " ++ show sym -- This will long as an int and key pressed while the mod key is held down
             when (sym == keySymToInt KEY_s) $ do
-                -- simple match to key events defined in LibTinyWLHS.KeyBinding.KeySyms
-                wlr_log WLR_INFO "Alt+s pressed, spawning a terminal emulator"
+                -- simple match to key events defined in LibTinyWL.KeyBinding.KeySyms
+                wlr_log WLR_INFO "Mod + s pressed, spawning a terminal emulator"
                 _ <- spawnProcess (terminalEmulator appConfig) [] -- for this key event a process is spawned in Haskell
                 pure ()
             when (sym == keySymToInt KEY_c) $ do
                 -- the key Events just show up here as ints so you can also match against a raw int
-                wlr_log WLR_INFO "Alt + c pressed closing server"
+                wlr_log WLR_INFO "Mod + c pressed closing server"
                 FFI.c_wl_display_terminate display -- for this event we call a Wayland FFI function
+                pure ()
+            when (sym == keySymToInt KEY_d || sym == keySymToInt KEY_v) $ do
+                -- You can also use logical OR
+                wlr_log WLR_INFO "Mod + d pressed, cycling windows"
+                result <- FFI.c_cycle_windows server
+                (if result then wlr_log WLR_INFO "window cycled" else wlr_log WLR_INFO "Window cycling failed, Only one window")
+
                 pure ()
     mkKeybindingHandler handler
 ```
