@@ -130,7 +130,7 @@ appConfig =
 
 You can also set up your own Key even listeners to do any of the following:
 
-- spawn any application or process you like
+- spawn any process you like
 - interact and control the compositor by calling FFI and Haskell functions in the LibTinyWLHS library
 - change current key bindings to your preference
 
