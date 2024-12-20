@@ -70,6 +70,9 @@ void focus_toplevel(struct tinywl_toplevel *toplevel,
                                    &keyboard->modifiers);
   }
 }
+static void layer_surface_destroy(struct wl_listener *listener, void *data);
+static void layer_surface_map(struct wl_listener *listener, void *data);
+static void layer_surface_unmap(struct wl_listener *listener, void *data);
 
 static void keyboard_handle_modifiers(struct wl_listener *listener,
                                       void *data) {
@@ -798,12 +801,62 @@ void server_destroy(struct tinywl_server *server) {
     free(server);
 }
 
+static void layer_surface_destroy(struct wl_listener *listener, void *data) {
+    struct tinywl_layer_surface *toplevel = wl_container_of(listener, toplevel, destroy);
+    wl_list_remove(&toplevel->map.link);
+    wl_list_remove(&toplevel->unmap.link);
+    wl_list_remove(&toplevel->destroy.link);
+    free(toplevel);
+}
+
+static void layer_surface_map(struct wl_listener *listener, void *data) {
+    struct tinywl_layer_surface *toplevel = wl_container_of(listener, toplevel, map);
+    wlr_log(WLR_DEBUG, "Layer surface mapped");
+}
+
+static void layer_surface_unmap(struct wl_listener *listener, void *data) {
+    struct tinywl_layer_surface *toplevel = wl_container_of(listener, toplevel, unmap);
+}
+
+
+
+static void server_new_layer_surface(struct wl_listener *listener, void *data) {
+    struct tinywl_server *server = wl_container_of(listener, server, new_layer_surface);
+    struct wlr_layer_surface_v1 *layer_surface = data;
+
+    struct tinywl_layer_surface *toplevel = calloc(1, sizeof(*toplevel));
+    toplevel->server = server;
+    toplevel->layer_surface = layer_surface;
+
+    toplevel->scene_tree = wlr_scene_layer_surface_v1_create(&server->scene->tree, layer_surface);
+    toplevel->scene_tree = wlr_scene_layer_surface_v1_create( &server->scene->tree, layer_surface);
+
+    toplevel->destroy.notify = layer_surface_destroy;
+    wl_signal_add(&layer_surface->events.destroy, &toplevel->destroy);
+
+    toplevel->map.notify = layer_surface_map;
+    wl_signal_add(&layer_surface->surface->events.map, &toplevel->map);
+
+    toplevel->unmap.notify = layer_surface_unmap;
+    wl_signal_add(&layer_surface->surface->events.unmap, &toplevel->unmap);
+
+    wlr_log(WLR_DEBUG, "New layer surface created");
+}
+
+void initialize_layer_shell(struct tinywl_server *server) {
+    server->layer_shell = wlr_layer_shell_v1_create(server->wl_display, 3);
+    server->new_layer_surface.notify = server_new_layer_surface;
+    wl_signal_add(&server->layer_shell->events.new_surface, &server->new_layer_surface);
+}
+
 bool server_init(struct tinywl_server *server) {
     wlr_log_init(WLR_DEBUG, NULL);
     
     initialize_output_layout(server);
     initialize_scene(server);
+  
     initialize_xdg_shell(server);
+    initialize_layer_shell(server);
     initialize_cursor(server);
     initialize_seat(server);
 

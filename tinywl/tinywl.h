@@ -12,6 +12,9 @@
 #include <wlr/types/wlr_output.h>
 #include <wlr/types/wlr_xdg_shell.h>
 #include <xkbcommon/xkbcommon.h>
+#include <wlr/types/wlr_layer_shell_v1.h>
+#include "wlr-layer-shell-unstable-v1-protocol.h"
+
 
 typedef void (*keybinding_handler_t)(xkb_keysym_t sym);
 
@@ -74,9 +77,23 @@ struct tinywl_server {
     struct wlr_output_layout *output_layout;
     struct wl_list outputs;
     struct wl_listener new_output;
-  keybinding_handler_t keybinding_handler;
 
+    keybinding_handler_t keybinding_handler;
+    struct wlr_layer_shell_v1 *layer_shell;
+    struct wl_listener new_layer_surface;
+    struct wl_list layer_surfaces;
+    struct wl_listener configure;
+};
 
+struct tinywl_layer_surface {
+    struct wl_list link;
+    struct tinywl_server *server;
+    struct wlr_layer_surface_v1 *layer_surface;
+struct wlr_scene_layer_surface_v1 *scene_tree;
+    
+    struct wl_listener destroy;
+    struct wl_listener map;
+    struct wl_listener unmap;
 };
 
 struct tinywl_output {

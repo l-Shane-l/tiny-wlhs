@@ -1,0 +1,2 @@
+wayland: mmap failed
+could not get next buffer

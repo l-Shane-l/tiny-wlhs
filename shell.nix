@@ -8,6 +8,7 @@ pkgs.mkShell {
     wayland-protocols
     wayland-scanner
     wlroots
+    wlr-protocols
     pixman
     libxkbcommon
     libffi
@@ -38,6 +39,7 @@ pkgs.mkShell {
   ];
   shellHook = ''
     export WAYLAND_PROTOCOLS=${pkgs.wayland-protocols}/share/wayland-protocols
+    export WLR_PROTOCOLS=${pkgs.wlr-protocols}/share/wlr-protocols/
     export WAYLAND_SCANNER=${pkgs.wayland-scanner}/bin/wayland-scanner
     export WLR_RENDERER=pixman
     unset GHC_PACKAGE_PATH
