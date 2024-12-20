@@ -30,6 +30,7 @@ pkgs.mkShell {
     xorg.xcbutilwm
     xorg.xcbutilerrors
     seatd
+    bear
     gcc
     gnumake
     gdb
