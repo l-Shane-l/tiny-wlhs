@@ -1,5 +1,9 @@
 #define _POSIX_C_SOURCE 200112L
 #include "tinywl.h"
+#include <limits.h>
+
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
 
 void focus_toplevel(struct tinywl_toplevel *toplevel,
                     struct wlr_surface *surface) {
@@ -798,27 +802,61 @@ void server_destroy(struct tinywl_server *server) {
   free(server);
 }
 
+static void get_output_dimensions(struct wlr_output *output, int32_t *width,
+                                  int32_t *height) {
+  if (!output) {
+    *width = 800;
+    *height = 25;
+    return;
+  }
+  // Ensure dimensions are within INT32 bounds
+  *width = output->width > INT32_MAX ? INT32_MAX : output->width;
+  *height = output->height > INT32_MAX ? INT32_MAX : output->height;
+}
+
+// static void get_output_dimensions(struct wlr_output *output, int *width,
+//                                   int *height) {
+//   if (!output) {
+//     *width = 800; // Default fallback width
+//     *height = 25; // Default fallback height
+//     return;
+//   }
+//   *width = output->width;
+//   *height = output->height;
+// }
+
 static void server_new_layer_surface(struct wl_listener *listener, void *data) {
   struct tinywl_server *server =
       wl_container_of(listener, server, new_layer_surface);
   struct wlr_layer_surface_v1 *wlr_layer_surface = data;
 
+  // Ensure we have an output
   if (!wlr_layer_surface->output && !wl_list_empty(&server->outputs)) {
     struct tinywl_output *first_output =
         wl_container_of(server->outputs.next, first_output, link);
     wlr_layer_surface->output = first_output->wlr_output;
   }
 
-  // Set initial state if client hasn't requested anything specific
+  // Get output dimensions for defaults
+  int default_width, default_height;
+  get_output_dimensions(wlr_layer_surface->output, &default_width,
+                        &default_height);
+
+  // Set safe initial dimensions
   if (wlr_layer_surface->pending.desired_width == 0) {
-    wlr_layer_surface->pending.desired_width = 3840 / 2; // Half screen width
+    wlr_layer_surface->pending.desired_width = default_width / 2;
   }
   if (wlr_layer_surface->pending.desired_height == 0) {
-    wlr_layer_surface->pending.desired_height =
-        50; // Reasonable height for a menu
+    wlr_layer_surface->pending.desired_height = 25;
   }
 
-  // If no anchor is set, default to top center
+  // Ensure dimensions are within sane limits
+  wlr_layer_surface->pending.desired_width =
+      MIN(default_width, MAX(100, wlr_layer_surface->pending.desired_width));
+  wlr_layer_surface->pending.desired_height =
+      MIN(default_height, MAX(25, wlr_layer_surface->pending.desired_height));
+
+  // Set default anchor if none provided
   if (wlr_layer_surface->pending.anchor == 0) {
     wlr_layer_surface->pending.anchor = ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP |
                                         ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT |
@@ -861,10 +899,18 @@ static void server_new_layer_surface(struct wl_listener *listener, void *data) {
   layer_surface->configure.notify = layer_surface_configure;
   wl_signal_add(&wlr_layer_surface->surface->events.commit,
                 &layer_surface->configure);
+
   // Add to list of layer surfaces
   wl_list_insert(&server->layer_surfaces, &layer_surface->link);
 
-  wlr_log(WLR_DEBUG, "New layer surface created successfully");
+  // Configure surface with validated dimensions
+  uint32_t serial = wlr_layer_surface_v1_configure(
+      wlr_layer_surface, wlr_layer_surface->pending.desired_width,
+      wlr_layer_surface->pending.desired_height);
+
+  wlr_log(WLR_DEBUG, "New layer surface configured with dimensions: %dx%d",
+          wlr_layer_surface->pending.desired_width,
+          wlr_layer_surface->pending.desired_height);
 }
 
 static void layer_surface_configure(struct wl_listener *listener, void *data) {
@@ -919,19 +965,26 @@ static void layer_surface_map(struct wl_listener *listener, void *data) {
       wl_container_of(listener, layer_surface, map);
   struct wlr_layer_surface_v1 *wlr_layer_surface = layer_surface->layer_surface;
 
-  // Get the output (if no preference, use the first available output)
-  struct wlr_output *output = wlr_layer_surface->output;
-  if (!output) {
-    struct tinywl_output *first_output = wl_container_of(
-        layer_surface->server->outputs.next, first_output, link);
-    wlr_layer_surface->output = first_output->wlr_output;
+  // Get output dimensions
+  int width, height;
+  get_output_dimensions(wlr_layer_surface->output, &width, &height);
+
+  // Ensure dimensions are valid
+  if (wlr_layer_surface->current.desired_width <= 0 ||
+      wlr_layer_surface->current.desired_width > width) {
+    wlr_layer_surface->current.desired_width = width / 2;
+  }
+  if (wlr_layer_surface->current.desired_height <= 0 ||
+      wlr_layer_surface->current.desired_height > height) {
+    wlr_layer_surface->current.desired_height = 25;
   }
 
-  // Focus the layer surface
-  focus_layer_surface(layer_surface->server, wlr_layer_surface->surface);
+  // Configure surface with validated dimensions
+  wlr_layer_surface_v1_configure(wlr_layer_surface,
+                                 wlr_layer_surface->current.desired_width,
+                                 wlr_layer_surface->current.desired_height);
 
-  wlr_log(WLR_DEBUG, "Layer surface mapped with role %d",
-          wlr_layer_surface->current.layer);
+  focus_layer_surface(layer_surface->server, wlr_layer_surface->surface);
 }
 
 static void layer_surface_unmap(struct wl_listener *listener, void *data) {
@@ -955,28 +1008,68 @@ static void layer_surface_destroy(struct wl_listener *listener, void *data) {
 }
 
 void initialize_layer_shell(struct tinywl_server *server) {
-  wl_list_init(&server->layer_surfaces); // Add this line
+  wl_list_init(&server->layer_surfaces);
   server->layer_shell = wlr_layer_shell_v1_create(server->wl_display, 3);
+  if (!server->layer_shell) {
+    wlr_log(WLR_ERROR, "Failed to create layer shell");
+    return;
+  }
   server->new_layer_surface.notify = server_new_layer_surface;
   wl_signal_add(&server->layer_shell->events.new_surface,
                 &server->new_layer_surface);
+  wlr_log(WLR_DEBUG, "Layer shell initialized successfully");
 }
 
 bool server_init(struct tinywl_server *server) {
   wlr_log_init(WLR_DEBUG, NULL);
+
+  // Basic display/backend setup first
   if (!initialize_backend_renderer_allocator(server)) {
     return false;
   }
 
+  // Output and scene setup
   initialize_output_layout(server);
   initialize_scene(server);
 
+  // Input handling setup (seat and cursor)
+  initialize_seat(server);
+  initialize_cursor(server);
+
+  // Protocol support
+  server->xdg_activation = wlr_xdg_activation_v1_create(server->wl_display);
+
+  server->new_activation_request.notify = handle_xdg_activation_v1_request;
+  wl_signal_add(&server->xdg_activation->events.request_activate,
+                &server->new_activation_request);
   initialize_xdg_shell(server);
   initialize_layer_shell(server);
-  initialize_cursor(server);
-  initialize_seat(server);
 
   return true;
+}
+
+static void handle_xdg_activation_v1_request(struct wl_listener *listener,
+                                             void *data) {
+  struct tinywl_server *server =
+      wl_container_of(listener, server, new_activation_request);
+  struct wlr_xdg_activation_v1_request_activate_event *event = data;
+
+  /* Skip if surface is already focused */
+  struct wlr_surface *surface = event->surface;
+  if (surface == server->seat->keyboard_state.focused_surface) {
+    return;
+  }
+
+  /* Find the toplevel and focus it */
+  struct wlr_xdg_surface *xdg_surface =
+      wlr_xdg_surface_try_from_wlr_surface(surface);
+  if (xdg_surface != NULL &&
+      xdg_surface->role == WLR_XDG_SURFACE_ROLE_TOPLEVEL) {
+    struct tinywl_toplevel *toplevel = xdg_surface->data;
+    if (toplevel != NULL) {
+      focus_toplevel(toplevel, surface);
+    }
+  }
 }
 
 const char *server_start(struct tinywl_server *server) {

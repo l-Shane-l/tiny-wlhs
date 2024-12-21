@@ -38,6 +38,7 @@
 #include <wlr/types/wlr_seat.h>
 #include <wlr/types/wlr_subcompositor.h>
 #include <wlr/types/wlr_xcursor_manager.h>
+#include <wlr/types/wlr_xdg_activation_v1.h>
 #include <wlr/types/wlr_xdg_shell.h>
 #include <wlr/util/log.h>
 #include <xkbcommon/xkbcommon.h>
@@ -105,6 +106,9 @@ struct tinywl_server {
   struct wl_listener new_layer_surface;
   struct wl_list layer_surfaces;
   struct wl_listener configure;
+
+  struct wlr_xdg_activation_v1 *xdg_activation;
+  struct wl_listener new_activation_request;
 };
 
 struct tinywl_layer_surface {
@@ -163,6 +167,8 @@ const char *server_start(struct tinywl_server *server);
 void server_run(struct tinywl_server *server);
 void server_set_startup_command(const char *cmd);
 bool cycle_windows(struct tinywl_server *server);
+static void handle_xdg_activation_v1_request(struct wl_listener *listener,
+                                             void *data);
 
 bool initialize_backend_renderer_allocator(struct tinywl_server *server);
 

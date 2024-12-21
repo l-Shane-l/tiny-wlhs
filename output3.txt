@@ -1,0 +1,5 @@
+/nix/store/h3bhzvz9ipglcybbcvkxvm4vg9lwvqg4-bash-5.2p26/bin/bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+/nix/store/h3bhzvz9ipglcybbcvkxvm4vg9lwvqg4-bash-5.2p26/bin/sh: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+/nix/store/ddnli8jf61g96xlmfgfnav5cf041pq95-bash-interactive-5.2p26/bin/bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+dmenu: warning: no locale support
+[destroyed object]: error 1: Invalid width, height or stride (-745771759x20, 1311880260)
