@@ -11,7 +11,8 @@ CFLAGS += -fPIC -g -ggdb -O1
 # Output file is now a shared library
 OUTPUT = libtinywl.so
 
-DEPS = tinywl.h xdg-shell-protocol.h
+
+DEPS = tinywl.h xdg-shell-protocol.h wlr-layer-shell-unstable-v1-protocol.h
 
 # wayland-scanner is a tool which generates C headers and rigging for Wayland
 # protocols, which are specified in XML. wlroots requires you to rig these up
@@ -19,6 +20,10 @@ DEPS = tinywl.h xdg-shell-protocol.h
 xdg-shell-protocol.h:
 	$(WAYLAND_SCANNER) server-header \
 		$(WAYLAND_PROTOCOLS)/stable/xdg-shell/xdg-shell.xml $@
+
+wlr-layer-shell-unstable-v1-protocol.h:
+	$(WAYLAND_SCANNER) server-header \
+        $(WLR_PROTOCOLS)/unstable/wlr-layer-shell-unstable-v1.xml $@
 
 $(OUTPUT): tinywl.c $(DEPS)
 	$(CC) $(CFLAGS) -shared \

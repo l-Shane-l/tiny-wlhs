@@ -1,0 +1,29 @@
+
+(process:16066): Gtk-WARNING **: 14:32:27.321: Locale not supported by C library.
+	Using the fallback 'C' locale.
+[2024-12-21 14:32:27.358] [debug] Try expanding: $XDG_CONFIG_HOME/waybar/config
+[2024-12-21 14:32:27.358] [debug] Try expanding: $XDG_CONFIG_HOME/waybar/config.jsonc
+[2024-12-21 14:32:27.358] [debug] Try expanding: $HOME/.config/waybar/config
+[2024-12-21 14:32:27.358] [debug] Try expanding: $HOME/.config/waybar/config.jsonc
+[2024-12-21 14:32:27.358] [debug] Try expanding: $HOME/waybar/config
+[2024-12-21 14:32:27.358] [debug] Try expanding: $HOME/waybar/config.jsonc
+[2024-12-21 14:32:27.358] [debug] Try expanding: /etc/xdg/waybar/config
+[2024-12-21 14:32:27.358] [debug] Try expanding: /etc/xdg/waybar/config.jsonc
+[2024-12-21 14:32:27.358] [debug] Try expanding: /nix/store/bkn50dgni3dsz9gzb6r14d21jnnm0gyq-waybar-0.10.3/etc/xdg/waybar/config
+[2024-12-21 14:32:27.358] [debug] Try expanding: /nix/store/bkn50dgni3dsz9gzb6r14d21jnnm0gyq-waybar-0.10.3/etc/xdg/waybar/config.jsonc
+[2024-12-21 14:32:27.358] [debug] Found config file: /nix/store/bkn50dgni3dsz9gzb6r14d21jnnm0gyq-waybar-0.10.3/etc/xdg/waybar/config.jsonc
+[2024-12-21 14:32:27.358] [info] Using configuration file /nix/store/bkn50dgni3dsz9gzb6r14d21jnnm0gyq-waybar-0.10.3/etc/xdg/waybar/config.jsonc
+[2024-12-21 14:32:27.364] [info] Discovered appearance 'dark'
+[2024-12-21 14:32:27.364] [debug] Try expanding: $XDG_CONFIG_HOME/waybar/style-dark.css
+[2024-12-21 14:32:27.364] [debug] Try expanding: $XDG_CONFIG_HOME/waybar/style.css
+[2024-12-21 14:32:27.364] [debug] Try expanding: $HOME/.config/waybar/style-dark.css
+[2024-12-21 14:32:27.364] [debug] Try expanding: $HOME/.config/waybar/style.css
+[2024-12-21 14:32:27.364] [debug] Try expanding: $HOME/waybar/style-dark.css
+[2024-12-21 14:32:27.364] [debug] Try expanding: $HOME/waybar/style.css
+[2024-12-21 14:32:27.364] [debug] Try expanding: /etc/xdg/waybar/style-dark.css
+[2024-12-21 14:32:27.364] [debug] Try expanding: /etc/xdg/waybar/style.css
+[2024-12-21 14:32:27.364] [debug] Try expanding: /nix/store/bkn50dgni3dsz9gzb6r14d21jnnm0gyq-waybar-0.10.3/etc/xdg/waybar/style-dark.css
+[2024-12-21 14:32:27.364] [debug] Try expanding: /nix/store/bkn50dgni3dsz9gzb6r14d21jnnm0gyq-waybar-0.10.3/etc/xdg/waybar/style.css
+[2024-12-21 14:32:27.365] [debug] Found config file: /nix/store/bkn50dgni3dsz9gzb6r14d21jnnm0gyq-waybar-0.10.3/etc/xdg/waybar/style.css
+[2024-12-21 14:32:27.365] [info] Using CSS file /nix/store/bkn50dgni3dsz9gzb6r14d21jnnm0gyq-waybar-0.10.3/etc/xdg/waybar/style.css
+[2024-12-21 14:32:27.382] [error] Failed to acquire required resources.

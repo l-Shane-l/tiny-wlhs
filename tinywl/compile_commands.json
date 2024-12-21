@@ -1,0 +1,26 @@
+[
+  {
+    "arguments": [
+      "/nix/store/r6k305g2rn0qqkvdxfvzqg7mhh7rw679-gcc-wrapper-13.2.0/bin/gcc",
+      "-c",
+      "-fPIC",
+      "-g",
+      "-ggdb",
+      "-O1",
+      "-g",
+      "-Werror",
+      "-I.",
+      "-DWLR_USE_UNSTABLE",
+      "-I/nix/store/xxh34bcvbzqp9r0z98r2qmja3lp3qf7r-wlroots-0.17.3/include",
+      "-I/nix/store/zxblsvnpxaf4yslyifnwww1kdgi1dmyc-wayland-1.22.0-dev/include",
+      "-I/nix/store/afp4ycmcgijcq6alln90v5sbryw09q81-libxkbcommon-1.7.0-dev/include",
+      "-I/nix/store/ykzlrlb2zvz4qsngr16bv2140f637rd2-pixman-0.43.4/include",
+      "-o",
+      "libtinywl.so",
+      "tinywl.c"
+    ],
+    "directory": "/home/shane/tiny-wlhs/tinywl",
+    "file": "/home/shane/tiny-wlhs/tinywl/tinywl.c",
+    "output": "/home/shane/tiny-wlhs/tinywl/libtinywl.so"
+  }
+]
