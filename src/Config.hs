@@ -38,26 +38,7 @@ customKeybindings display server = do
                 wlr_log WLR_INFO "Mod + s pressed, spawning a terminal emulator"
                 _ <- spawnProcess (terminalEmulator appConfig) [] -- for this key event a process is spawned in Haskell
                 pure ()
-            when (sym == keySymToInt KEY_o) $ do
-                wlr_log WLR_INFO "Mod + o pressed, launching menu"
-                _ <-
-                    spawnProcess
-                        "dmenu-wl_run"
-                        [ "-i" -- case insensitive
-                        , "-l"
-                        , "10" -- number of lines
-                        , "-fn"
-                        , "monospace-12" -- font
-                        , "-nb"
-                        , "#222222" -- normal background color
-                        , "-nf"
-                        , "#bbbbbb" -- normal foreground color
-                        , "-sb"
-                        , "#285577" -- selected background color
-                        , "-sf"
-                        , "#eeeeee" -- selected foreground color
-                        ]
-                pure ()
+
             when (sym == keySymToInt KEY_a) $ do
                 -- simple match to key events defined in LibTinyWL.KeyBinding.KeySyms
                 wlr_log WLR_INFO "Mod + a pressed, spawning a terminal emulator"

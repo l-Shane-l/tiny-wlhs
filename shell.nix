@@ -33,11 +33,6 @@ pkgs.mkShell {
     bear
     gcc
     gnumake
-    htop
-    neofetch
-    dmenu-wayland
-    cairo
-    pango
     gdb
     ghc
     cabal-install
