@@ -34,6 +34,7 @@ pkgs.mkShell {
     gcc
     gnumake
     gdb
+    libseat
     ghc
     cabal-install
     haskell-language-server

@@ -1,0 +1,37 @@
+/nix/store/516kai7nl5dxr792c0nzq0jp8m4zvxpi-bash-5.2p32/bin/bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+Warning: Both /home/shane/.cabal and /home/shane/.config/cabal/config exist -
+ignoring the former.
+It is advisable to remove one of them. In that case, we will use the remaining
+one by default (unless '$CABAL_DIR' is explicitly set).
+00:00:00.000 [INFO] Command line arguments no longer supported, please configure app in Config.hs
+00:00:00.000 [DEBUG] Server created
+00:00:00.000 [INFO] [libseat] [libseat/backend/seatd.c:64] Could not connect to socket /run/seatd.sock: No such file or directory
+00:00:00.000 [INFO] [libseat] [libseat/libseat.c:76] Backend 'seatd' failed to open seat, skipping
+00:00:00.006 [INFO] [libseat] [libseat/libseat.c:73] Seat opened with backend 'logind'
+00:00:00.006 [INFO] [backend/session/session.c:109] Successfully loaded libseat session
+00:00:00.008 [INFO] [backend/backend.c:213] Found 1 GPUs
+00:00:00.008 [INFO] [backend/drm/backend.c:202] Initializing DRM backend for /dev/dri/card0 (i915)
+00:00:00.008 [DEBUG] [backend/drm/drm.c:110] Using atomic DRM interface
+00:00:00.008 [DEBUG] [backend/drm/drm.c:123] ADDFB2 modifiers supported
+00:00:00.008 [INFO] [backend/drm/drm.c:255] Found 4 DRM CRTCs
+00:00:00.008 [INFO] [backend/drm/drm.c:213] Found 32 DRM planes
+00:00:00.009 [INFO] [util/env.c:25] Loading WLR_RENDERER option: pixman
+00:00:00.009 [INFO] [render/pixman/renderer.c:537] Creating pixman renderer
+00:00:00.009 [DEBUG] [render/allocator/allocator.c:134] Trying to create drm dumb allocator
+00:00:00.009 [DEBUG] [render/allocator/drm_dumb.c:229] Created DRM dumb allocator
+00:00:00.009 [DEBUG] Created outputLayout pointer: 0x0000000001746d00
+00:00:00.009 [INFO] About to set outputLayout pointer: 0x0000000001746d00
+00:00:00.009 [INFO] Output layout set attempt completed
+00:00:00.009 [INFO] Retrieved layoutPtr: 0x0000000001746d00
+00:00:00.009 [INFO] Final output layout pointer: 
+00:00:00.009 [INFO] [libseat] [libseat/backend/seatd.c:64] Could not connect to socket /run/seatd.sock: No such file or directory
+00:00:00.009 [INFO] [libseat] [libseat/libseat.c:76] Backend 'seatd' failed to open seat, skipping
+00:00:00.015 [INFO] [libseat] [libseat/libseat.c:73] Seat opened with backend 'logind'
+00:00:00.015 [INFO] [backend/session/session.c:109] Successfully loaded libseat session
+00:00:00.016 [ERROR] [libseat] [libseat/backend/logind.c:137] Could not take device: Device already taken
+00:00:00.016 [ERROR] [backend/session/session.c:321] Failed to open device: '/dev/dri/card0': Resource temporarily unavailable
+00:00:00.016 [ERROR] [backend/backend.c:210] Found 0 GPUs, cannot create backend
+00:00:00.016 [ERROR] [backend/backend.c:376] Failed to open any DRM device
+00:00:00.069 [ERROR] [tinywl.c:1167] Failed to create backend
+00:00:00.069 [ERROR] Failed to initialize server
+00:00:00.069 [INFO] Server destroyed, shutting down
