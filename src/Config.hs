@@ -38,6 +38,40 @@ customKeybindings display server = do
                 wlr_log WLR_INFO "Mod + s pressed, spawning a terminal emulator"
                 _ <- spawnProcess (terminalEmulator appConfig) [] -- for this key event a process is spawned in Haskell
                 pure ()
+            when (sym == keySymToInt KEY_a) $ do
+                -- simple match to key events defined in LibTinyWL.KeyBinding.KeySyms
+                wlr_log WLR_INFO "Mod + a pressed, spawning a terminal emulator"
+                _ <-
+                    spawnProcess
+                        ("bemenu-run")
+                        [ "-i" -- case insensitive
+                        , "-l"
+                        , "10" -- show 10 lines
+                        , "-p"
+                        , "run:" -- prompt
+                        , "--tb"
+                        , "#285577" -- title background
+                        , "--tf"
+                        , "#ffffff" -- title foreground
+                        , "--fb"
+                        , "#222222" -- filter background
+                        , "--ff"
+                        , "#ffffff" -- filter foreground
+                        , "--nb"
+                        , "#222222" -- normal background
+                        , "--nf"
+                        , "#888888" -- normal foreground
+                        , "--hb"
+                        , "#285577" -- highlighted background
+                        , "--hf"
+                        , "#ffffff" -- highlighted foreground
+                        , "--fn"
+                        , "monospace 12" -- font
+                        , "-W"
+                        , "kitty" ++ " -e"
+                        ] -- for this key event a process is spawned in Haskell
+                pure ()
+
             when (sym == keySymToInt KEY_c) $ do
                 -- the key Events just show up here as ints so you can also match against a raw int
                 wlr_log WLR_INFO "Mod + c pressed closing server"
@@ -50,4 +84,5 @@ customKeybindings display server = do
                 (if result then wlr_log WLR_INFO "window cycled" else wlr_log WLR_INFO "Window cycling failed, Only one window")
 
                 pure ()
+
     mkKeybindingHandler handler
