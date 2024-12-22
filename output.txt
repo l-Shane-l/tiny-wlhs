@@ -1,29 +1,47 @@
-
-(process:16066): Gtk-WARNING **: 14:32:27.321: Locale not supported by C library.
-	Using the fallback 'C' locale.
-[2024-12-21 14:32:27.358] [debug] Try expanding: $XDG_CONFIG_HOME/waybar/config
-[2024-12-21 14:32:27.358] [debug] Try expanding: $XDG_CONFIG_HOME/waybar/config.jsonc
-[2024-12-21 14:32:27.358] [debug] Try expanding: $HOME/.config/waybar/config
-[2024-12-21 14:32:27.358] [debug] Try expanding: $HOME/.config/waybar/config.jsonc
-[2024-12-21 14:32:27.358] [debug] Try expanding: $HOME/waybar/config
-[2024-12-21 14:32:27.358] [debug] Try expanding: $HOME/waybar/config.jsonc
-[2024-12-21 14:32:27.358] [debug] Try expanding: /etc/xdg/waybar/config
-[2024-12-21 14:32:27.358] [debug] Try expanding: /etc/xdg/waybar/config.jsonc
-[2024-12-21 14:32:27.358] [debug] Try expanding: /nix/store/bkn50dgni3dsz9gzb6r14d21jnnm0gyq-waybar-0.10.3/etc/xdg/waybar/config
-[2024-12-21 14:32:27.358] [debug] Try expanding: /nix/store/bkn50dgni3dsz9gzb6r14d21jnnm0gyq-waybar-0.10.3/etc/xdg/waybar/config.jsonc
-[2024-12-21 14:32:27.358] [debug] Found config file: /nix/store/bkn50dgni3dsz9gzb6r14d21jnnm0gyq-waybar-0.10.3/etc/xdg/waybar/config.jsonc
-[2024-12-21 14:32:27.358] [info] Using configuration file /nix/store/bkn50dgni3dsz9gzb6r14d21jnnm0gyq-waybar-0.10.3/etc/xdg/waybar/config.jsonc
-[2024-12-21 14:32:27.364] [info] Discovered appearance 'dark'
-[2024-12-21 14:32:27.364] [debug] Try expanding: $XDG_CONFIG_HOME/waybar/style-dark.css
-[2024-12-21 14:32:27.364] [debug] Try expanding: $XDG_CONFIG_HOME/waybar/style.css
-[2024-12-21 14:32:27.364] [debug] Try expanding: $HOME/.config/waybar/style-dark.css
-[2024-12-21 14:32:27.364] [debug] Try expanding: $HOME/.config/waybar/style.css
-[2024-12-21 14:32:27.364] [debug] Try expanding: $HOME/waybar/style-dark.css
-[2024-12-21 14:32:27.364] [debug] Try expanding: $HOME/waybar/style.css
-[2024-12-21 14:32:27.364] [debug] Try expanding: /etc/xdg/waybar/style-dark.css
-[2024-12-21 14:32:27.364] [debug] Try expanding: /etc/xdg/waybar/style.css
-[2024-12-21 14:32:27.364] [debug] Try expanding: /nix/store/bkn50dgni3dsz9gzb6r14d21jnnm0gyq-waybar-0.10.3/etc/xdg/waybar/style-dark.css
-[2024-12-21 14:32:27.364] [debug] Try expanding: /nix/store/bkn50dgni3dsz9gzb6r14d21jnnm0gyq-waybar-0.10.3/etc/xdg/waybar/style.css
-[2024-12-21 14:32:27.365] [debug] Found config file: /nix/store/bkn50dgni3dsz9gzb6r14d21jnnm0gyq-waybar-0.10.3/etc/xdg/waybar/style.css
-[2024-12-21 14:32:27.365] [info] Using CSS file /nix/store/bkn50dgni3dsz9gzb6r14d21jnnm0gyq-waybar-0.10.3/etc/xdg/waybar/style.css
-[2024-12-21 14:32:27.382] [error] Failed to acquire required resources.
+/nix/store/516kai7nl5dxr792c0nzq0jp8m4zvxpi-bash-5.2p32/bin/bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+Warning: Both /home/shane/.cabal and /home/shane/.config/cabal/config exist -
+ignoring the former.
+It is advisable to remove one of them. In that case, we will use the remaining
+one by default (unless '$CABAL_DIR' is explicitly set).
+00:00:00.000 [INFO] Command line arguments no longer supported, please configure app in Config.hs
+00:00:00.000 [DEBUG] Server created
+00:00:00.000 [DEBUG] Display created
+00:00:00.000 [DEBUG] Set WLDisplay
+00:00:00.000 [INFO] [libseat] [libseat/libseat.c:73] Seat opened with backend 'seatd'
+00:00:00.000 [INFO] [libseat] [libseat/backend/seatd.c:212] Enabling seat
+00:00:00.000 [INFO] [backend/session/session.c:109] Successfully loaded libseat session
+00:00:00.001 [INFO] [backend/backend.c:213] Found 1 GPUs
+00:00:00.001 [INFO] [backend/drm/backend.c:202] Initializing DRM backend for /dev/dri/card0 (i915)
+00:00:00.001 [DEBUG] [backend/drm/drm.c:110] Using atomic DRM interface
+00:00:00.001 [DEBUG] [backend/drm/drm.c:123] ADDFB2 modifiers supported
+00:00:00.001 [INFO] [backend/drm/drm.c:255] Found 4 DRM CRTCs
+00:00:00.001 [INFO] [backend/drm/drm.c:213] Found 32 DRM planes
+00:00:00.002 [DEBUG] Backend autocreate
+00:00:00.002 [DEBUG] Set Backend
+00:00:00.002 [INFO] [util/env.c:25] Loading WLR_RENDERER option: pixman
+00:00:00.002 [INFO] [render/pixman/renderer.c:537] Creating pixman renderer
+00:00:00.002 [DEBUG] create renderer with autocreate
+00:00:00.002 [DEBUG] Set renderer
+00:00:00.002 [DEBUG] render init display
+00:00:00.002 [DEBUG] [render/allocator/allocator.c:134] Trying to create drm dumb allocator
+00:00:00.002 [DEBUG] [render/allocator/drm_dumb.c:229] Created DRM dumb allocator
+00:00:00.002 [DEBUG] autocrate allocator
+00:00:00.002 [DEBUG] Set allocator
+00:00:00.002 [DEBUG] create output layout 0x0000000000ab5230
+00:00:00.002 [INFO] About to set outputLayout pointer: 0x0000000000ab5230
+00:00:00.002 [INFO] Output layout set attempt completed
+00:00:00.002 [INFO] Retrieved layoutPtr: 0x0000000000ab5230
+00:00:00.002 [INFO] Final output layout pointer: 
+00:00:00.002 [INFO] Got this far
+00:00:00.002 [ERROR] [tinywl.c:1165] initializing backe renderer allocator
+00:00:00.002 [ERROR] [tinywl.c:1173] got this far
+00:00:00.002 [ERROR] [libseat] [libseat/backend/seatd.c:308] Could not poll connection: Broken pipe
+00:00:00.002 [INFO] [libseat] [libseat/libseat.c:76] Backend 'seatd' failed to open seat, skipping
+00:00:00.027 [INFO] [libseat] [libseat/libseat.c:73] Seat opened with backend 'logind'
+00:00:00.027 [INFO] [backend/session/session.c:109] Successfully loaded libseat session
+00:00:00.030 [ERROR] [libseat] [libseat/backend/logind.c:137] Could not take device: Device or resource busy
+00:00:00.030 [ERROR] [backend/session/session.c:321] Failed to open device: '/dev/dri/card0': Resource temporarily unavailable
+00:00:00.031 [ERROR] [backend/backend.c:210] Found 0 GPUs, cannot create backend
+00:00:00.031 [ERROR] [backend/backend.c:376] Failed to open any DRM device
+00:00:00.038 [ERROR] [tinywl.c:1178] Failed to create backend
+00:00:00.038 [ERROR] Failed to initialize server

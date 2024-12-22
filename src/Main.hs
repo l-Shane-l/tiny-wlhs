@@ -17,6 +17,7 @@ main = do
     args <- getArgs
     commandLineArguments args
     setup <- setupServer
+    wlr_log WLR_INFO "Server destroyed, shutting down"
     case setup of
         Nothing -> wlr_log WLR_ERROR "Failed to Setup Server"
         Just (server, renderer) -> do

@@ -29,7 +29,6 @@ pkgs.mkShell {
     xorg.xcbutilrenderutil
     xorg.xcbutilwm
     xorg.xcbutilerrors
-    seatd
     bear
     gcc
     gnumake

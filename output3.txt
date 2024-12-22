@@ -1,4 +1,0 @@
-info: fcft.c:338: fcft: 3.1.8 +graphemes +runs +svg(nanosvg) -assertions
-info: fcft.c:377: fontconfig: 2.15.0, freetype: 2.13.2, harfbuzz: 8.4.0, utf8proc: 2.9.0 (Unicode 15.1.0)
-info: fcft.c:848: /usr/share/fonts/truetype/noto/NotoSans-Regular.ttf: size=12.00pt/12.50px, dpi=75.00
- err: bar/wayland.c:913: failed to mmap SHM backing memory file

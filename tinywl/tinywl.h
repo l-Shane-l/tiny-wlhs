@@ -25,6 +25,8 @@
 #include <wayland-server-core.h>
 #include <wayland-server-protocol.h>
 #include <wlr/backend.h>
+#include <wlr/backend/interface.h>
+#include <wlr/backend/session.h>
 #include <wlr/render/allocator.h>
 #include <wlr/render/wlr_renderer.h>
 #include <wlr/types/wlr_compositor.h>
@@ -110,6 +112,8 @@ struct tinywl_server {
 
   struct wlr_xdg_activation_v1 *xdg_activation;
   struct wl_listener new_activation_request;
+
+  struct wlr_session *session;
 };
 
 struct tinywl_layer_surface {

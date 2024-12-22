@@ -1028,6 +1028,16 @@ bool server_init(struct tinywl_server *server) {
     return false;
   }
 
+  printf("server setup 1 phase 1 complete");
+
+  // Protocol support now second
+  server->xdg_activation = wlr_xdg_activation_v1_create(server->wl_display);
+  server->new_activation_request.notify = handle_xdg_activation_v1_request;
+  wl_signal_add(&server->xdg_activation->events.request_activate,
+                &server->new_activation_request);
+  initialize_xdg_shell(server);
+  initialize_layer_shell(server);
+
   // Output and scene setup
   initialize_output_layout(server);
   initialize_scene(server);
@@ -1035,15 +1045,6 @@ bool server_init(struct tinywl_server *server) {
   // Input handling setup (seat and cursor)
   initialize_seat(server);
   initialize_cursor(server);
-
-  // Protocol support
-  server->xdg_activation = wlr_xdg_activation_v1_create(server->wl_display);
-
-  server->new_activation_request.notify = handle_xdg_activation_v1_request;
-  wl_signal_add(&server->xdg_activation->events.request_activate,
-                &server->new_activation_request);
-  initialize_xdg_shell(server);
-  initialize_layer_shell(server);
 
   return true;
 }
@@ -1103,7 +1104,7 @@ char *parse_arguments(int argc, char *argv[]) {
 }
 
 void initialize_output_layout(struct tinywl_server *server) {
-  // server->output_layout = wlr_output_layout_create();
+  server->output_layout = wlr_output_layout_create();
   wl_list_init(&server->outputs);
   server->new_output.notify = server_new_output;
   wl_signal_add(&server->backend->events.new_output, &server->new_output);
@@ -1155,43 +1156,49 @@ void initialize_seat(struct tinywl_server *server) {
 }
 
 bool initialize_backend_renderer_allocator(struct tinywl_server *server) {
-  /* Create the backend */
-  server->wl_display = wl_display_create();
-  if (!server->wl_display) {
-    wlr_log(WLR_ERROR, "Could not create wayland display");
-    return false;
-  }
+  wlr_log(WLR_ERROR, "initializing backe renderer allocator");
+  /* Create the display */
+  // server->wl_display = wl_display_create();
+  // if (!server->wl_display) {
+  //   wlr_log(WLR_ERROR, "Could not create wayland display");
+  //   return false;
+  // }
+  //
+  wlr_log(WLR_ERROR, "got this far");
 
-  server->backend = wlr_backend_autocreate(server->wl_display, NULL);
-  if (!server->backend) {
-    wlr_log(WLR_ERROR, "Failed to create backend");
-    return false;
-  }
+  /* Create the backend - let wlroots handle session creation */
+  // server->backend = wlr_backend_autocreate(server->wl_display, NULL);
+  // if (!server->backend) {
+  //   wlr_log(WLR_ERROR, "Failed to create backend");
+  //   wl_display_destroy(server->wl_display);
+  //   return false;
+  // }
+
+  wlr_log(WLR_ERROR, "but not here");
 
   /* Initialize the renderer */
-  server->renderer = wlr_renderer_autocreate(server->backend);
-  if (!server->renderer) {
-    wlr_log(WLR_ERROR, "Failed to create renderer");
-    return false;
-  }
-
-  /* Initialize wayland display with renderer */
+  // server->renderer = wlr_renderer_autocreate(server->backend);
+  // if (!server->renderer) {
+  //   wlr_log(WLR_ERROR, "Failed to create renderer");
+  //   return false;
+  // }
+  //
   if (!wlr_renderer_init_wl_display(server->renderer, server->wl_display)) {
     wlr_log(WLR_ERROR, "Failed to initialize renderer with display");
     return false;
   }
 
   /* Create allocator */
-  server->allocator =
-      wlr_allocator_autocreate(server->backend, server->renderer);
-  if (!server->allocator) {
-    wlr_log(WLR_ERROR, "Failed to create allocator");
-    return false;
-  }
+  // server->allocator =
+  //     wlr_allocator_autocreate(server->backend, server->renderer);
+  // if (!server->allocator) {
+  //   wlr_log(WLR_ERROR, "Failed to create allocator");
+  //   return false;
+  // }
 
   /* Create compositor and necessary interfaces */
   struct wlr_compositor *compositor =
-      wlr_compositor_create(server->wl_display, 6, server->renderer);
+      wlr_compositor_create(server->wl_display, 5, server->renderer);
   if (!compositor) {
     wlr_log(WLR_ERROR, "Failed to create compositor");
     return false;

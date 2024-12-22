@@ -38,10 +38,10 @@ executable tiny-wlhs
     -- Add these lines for FFI support
     default-extensions:       ForeignFunctionInterface
     extra-libraries:  tinywl xkbcommon
-    extra-lib-dirs:   tinywl
+    extra-lib-dirs:   /home/shane/tiny-wlhs/tinywl
     
     -- If you need to specify include directories
-    include-dirs:     tinywl
+    include-dirs:     /home/shane/tiny-wlhs/tinywl
     
     -- Additional GHC options for linking
     ghc-options:      -threaded -rtsopts -with-rtsopts=-N
