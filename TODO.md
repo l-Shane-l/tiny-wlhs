@@ -10,20 +10,24 @@ The project currently has a feature set similar to tinywl with the addition of k
 
 ## Features
 
-The following is a list of features under development
+The following is a list of features under development, they are ordered by complexity from simple to most complex and also the order in which i will develop them
 
-### keybindings
+### Copy paste support
 
-Keybindings exist in a functional state with the option to add more in on the C side or manage them in haskell.
+Support using a clip board
 
-The next steps for keybindings will be investigating adding haskell bindings for xkbcommon
+### Advanced Wayland client support
 
-### Window management
+There is currently client support but clients like waybar expect a lot more protocols to be present
+
+### Multi Screen support
+
+This is already partially implemented
+
+### tiling management
 
 At the ability to have multiple screens and cycle through configurations
 
-### App support
+### locking support
 
-Adding the ability to use applications like dmenu and other quality of life apps designed to work with tiling managers.
-
-### Multi Screen support
+This is the most complex and will require a secure means to lock the system

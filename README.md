@@ -13,6 +13,10 @@ The app can be configured in Config.hs
 - Window management (move, resize, focus)
 - Dynamic terminal spawning
 - Window cycling
+- Support for application spawners like bemenu
+- Support for notification daemons like mako
+- support for simple bars like yambar (more complex bars like waybar is not support yet)
+- Can be run from an X11 session or a TTY
 
 More features coming, the intention is to get feature parity with something like sway
 
