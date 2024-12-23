@@ -57,8 +57,20 @@ All notable changes to this project will be documented in this file.
 - Moved compositor_init from c to haskell
 - refactored project to be move towards something somebody can use to create compositors instead of just a test for wlhs
 
-## 0.1.0.5 - 2023-12-07
+## 0.1.0.5 - 2024-12-07
 
 - Added support for key bindings
 - large refactor
 - Aim of project switched to providing features.
+
+## 0.1.1.0 - 2024-12-23
+
+- Wayland client support
+- Support for Bemenu
+- Support for Mako
+- Support for Yambar
+- Added layer support
+- Support for running outside an X11 session in a TTY
+- Better logging
+- Better dev tooling for the C code in the form of support for clangd
+- Support for seatd

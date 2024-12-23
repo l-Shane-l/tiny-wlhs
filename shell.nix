@@ -8,6 +8,7 @@ pkgs.mkShell {
     wayland-protocols
     wayland-scanner
     wlroots
+    wlr-protocols
     pixman
     libxkbcommon
     libffi
@@ -28,18 +29,31 @@ pkgs.mkShell {
     xorg.xcbutilrenderutil
     xorg.xcbutilwm
     xorg.xcbutilerrors
-    seatd
+
+    # Development tools
+    bear
+    gdb
+    haskell-language-server
+
+    #Example Wayland Clients
+    yambar
+    mako
+    bemenu
+
     gcc
     gnumake
-    gdb
+    libseat
     ghc
     cabal-install
-    haskell-language-server
   ];
   shellHook = ''
     export WAYLAND_PROTOCOLS=${pkgs.wayland-protocols}/share/wayland-protocols
+    export WLR_PROTOCOLS=${pkgs.wlr-protocols}/share/wlr-protocols/
     export WAYLAND_SCANNER=${pkgs.wayland-scanner}/bin/wayland-scanner
     export WLR_RENDERER=pixman
+    export BEMENU_OPTS="-i -l 10 --fn 'monospace 12' --tb '#1d1f21' --tf '#c5c8c6' --fb '#1d1f21' --ff '#c5c8c6' --nb '#1d1f21' --nf '#c5c8c6' --hb '#1d1f21' --hf '#81a2be'"
+    export BEMENU_BACKEND=wayland
+
     unset GHC_PACKAGE_PATH
 
     # Build tinywl
