@@ -29,14 +29,22 @@ pkgs.mkShell {
     xorg.xcbutilrenderutil
     xorg.xcbutilwm
     xorg.xcbutilerrors
+
+    # Development tools
     bear
+    gdb
+    haskell-language-server
+
+    #Example Wayland Clients
+    yambar
+    mako
+    bemenu
+
     gcc
     gnumake
-    gdb
     libseat
     ghc
     cabal-install
-    haskell-language-server
   ];
   shellHook = ''
     export WAYLAND_PROTOCOLS=${pkgs.wayland-protocols}/share/wayland-protocols

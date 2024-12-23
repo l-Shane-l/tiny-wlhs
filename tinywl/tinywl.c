@@ -824,11 +824,22 @@ static void get_output_dimensions(struct wlr_output *output, int32_t *width,
 //   *width = output->width;
 //   *height = output->height;
 // }
-
 static void server_new_layer_surface(struct wl_listener *listener, void *data) {
   struct tinywl_server *server =
       wl_container_of(listener, server, new_layer_surface);
   struct wlr_layer_surface_v1 *wlr_layer_surface = data;
+
+  wlr_log(WLR_DEBUG, "New layer surface request received");
+  if (!server->allocator) {
+    wlr_log(WLR_ERROR, "No allocator available for layer surface");
+    return;
+  }
+  wlr_log(WLR_DEBUG, "Allocator status: %s",
+          server->allocator ? "available" : "not available");
+  wlr_log(WLR_DEBUG, "Layer surface details - width: %d, height: %d, layer: %d",
+          wlr_layer_surface->pending.desired_width,
+          wlr_layer_surface->pending.desired_height,
+          wlr_layer_surface->pending.layer);
 
   // Ensure we have an output
   if (!wlr_layer_surface->output && !wl_list_empty(&server->outputs)) {
@@ -838,13 +849,21 @@ static void server_new_layer_surface(struct wl_listener *listener, void *data) {
   }
 
   // Get output dimensions for defaults
-  int default_width, default_height;
-  get_output_dimensions(wlr_layer_surface->output, &default_width,
-                        &default_height);
+  int32_t output_width = 0, output_height = 0;
+  if (wlr_layer_surface->output) {
+    output_width = wlr_layer_surface->output->width;
+    output_height = wlr_layer_surface->output->height;
+  } else {
+    // Fallback dimensions if no output
+    output_width = 1920; // Default fallback
+    output_height = 1080;
+  }
 
   // Set safe initial dimensions
   if (wlr_layer_surface->pending.desired_width == 0) {
-    wlr_layer_surface->pending.desired_width = default_width / 2;
+    wlr_layer_surface->pending.desired_width = output_width;
+    wlr_log(WLR_DEBUG, "Setting default width to output width: %d",
+            output_width);
   }
   if (wlr_layer_surface->pending.desired_height == 0) {
     wlr_layer_surface->pending.desired_height = 25;
@@ -852,9 +871,9 @@ static void server_new_layer_surface(struct wl_listener *listener, void *data) {
 
   // Ensure dimensions are within sane limits
   wlr_layer_surface->pending.desired_width =
-      MIN(default_width, MAX(100, wlr_layer_surface->pending.desired_width));
+      MIN(output_width, MAX(100, wlr_layer_surface->pending.desired_width));
   wlr_layer_surface->pending.desired_height =
-      MIN(default_height, MAX(25, wlr_layer_surface->pending.desired_height));
+      MIN(output_height, MAX(25, wlr_layer_surface->pending.desired_height));
 
   // Set default anchor if none provided
   if (wlr_layer_surface->pending.anchor == 0) {
@@ -912,18 +931,32 @@ static void server_new_layer_surface(struct wl_listener *listener, void *data) {
           wlr_layer_surface->pending.desired_width,
           wlr_layer_surface->pending.desired_height);
 }
-
 static void layer_surface_configure(struct wl_listener *listener, void *data) {
   struct tinywl_layer_surface *layer_surface =
       wl_container_of(listener, layer_surface, configure);
   struct wlr_layer_surface_v1 *wlr_layer_surface = layer_surface->layer_surface;
 
-  // Just configure with the pending state
-  uint32_t serial = wlr_layer_surface_v1_configure(
-      wlr_layer_surface, wlr_layer_surface->pending.desired_width,
-      wlr_layer_surface->pending.desired_height);
+  // Get current width and preserve it if it's valid
+  uint32_t width = wlr_layer_surface->current.desired_width;
+  if (width == 0) {
+    // If width is 0, use the output width
+    if (wlr_layer_surface->output) {
+      width = wlr_layer_surface->output->width;
+    } else {
+      width = 1920; // Fallback width
+    }
+  }
 
-  // No need to ack_configure as it's handled internally by wlroots
+  uint32_t height = wlr_layer_surface->current.desired_height;
+  if (height == 0) {
+    height = 26; // Default height
+  }
+
+  wlr_log(WLR_DEBUG, "Layer surface configure with preserved dimensions: %dx%d",
+          width, height);
+
+  uint32_t serial =
+      wlr_layer_surface_v1_configure(wlr_layer_surface, width, height);
   wlr_log(WLR_DEBUG, "Layer surface configured with serial %d", serial);
 }
 
@@ -1022,6 +1055,8 @@ void initialize_layer_shell(struct tinywl_server *server) {
 
 bool server_init(struct tinywl_server *server) {
   wlr_log_init(WLR_DEBUG, NULL);
+  // setenv("WAYLAND_DEBUG", "1", 1); // this gives really verbose logs on
+  // wayland protocols
 
   // Basic display/backend setup first
   if (!initialize_backend_renderer_allocator(server)) {

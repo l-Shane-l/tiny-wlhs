@@ -1,6 +1,6 @@
 cabal-version:      3.0
 name:               tiny-wlhs
-version:            0.1.0.4
+version:            0.1.1.0
 synopsis:           An attempt to create a haskell implementation of tinywl to test wlrroots bindings
 homepage:           TBD
 license:            BSD-3-Clause
@@ -38,10 +38,10 @@ executable tiny-wlhs
     -- Add these lines for FFI support
     default-extensions:       ForeignFunctionInterface
     extra-libraries:  tinywl xkbcommon
-    extra-lib-dirs:   /home/shane/tiny-wlhs/tinywl
+    extra-lib-dirs:   tinywl
     
     -- If you need to specify include directories
-    include-dirs:     /home/shane/tiny-wlhs/tinywl
+    include-dirs:     tinywl
     
     -- Additional GHC options for linking
     ghc-options:      -threaded -rtsopts -with-rtsopts=-N
