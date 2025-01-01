@@ -38,6 +38,8 @@ main = do
                             handlerPtr <- customKeybindings wlDisplay server
                             wlr_log WLR_DEBUG $ "Handler created: " ++ show handlerPtr
                             FFI.c_set_keybinding_handler server handlerPtr
+                            startingApps
+                            wlr_log WLR_INFO "TinyWLHS started"
                             FFI.c_server_run server
                         else wlr_log WLR_ERROR "Failed to start server"
                 else wlr_log WLR_ERROR "Failed to initialize server"

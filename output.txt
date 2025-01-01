@@ -1,0 +1,12 @@
+thread 'main' panicked at daemon/src/main.rs:335:14:
+viewported not available: NotPresent
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+17:23:06 [0m[34m[INFO] [0m(main) Removed socket at "/run/user/1000/swww-wayland-0.socket"
+Error: "Socket file not found. Are you sure swww-daemon is running?"
+info: main.c:395: 1.2.0
+ err: jpg.c:45: /home/shane/.wallpapers/haskell.png: Not a JPEG file: starts with 0x89 0x50
+info: main.c:234: output: The X.Org Foundation 11.0 (1918x1060, scale=1)
+info: main.c:119: render: 1918x25 (scaled from 1920x1080)
+info: main.c:119: render: 1918x26 (scaled from 1920x1080)
+info: main.c:119: render: 1918x25 (scaled from 1920x1080)
+info: main.c:527: goodbye

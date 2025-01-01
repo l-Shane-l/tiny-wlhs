@@ -39,6 +39,7 @@ pkgs.mkShell {
     yambar
     mako
     bemenu
+    wbg
 
     gcc
     gnumake

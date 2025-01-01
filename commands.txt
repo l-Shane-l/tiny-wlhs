@@ -1,0 +1,1 @@
+feh --bg-fill --no-fehbg ~/.wallpapers/haskell.png

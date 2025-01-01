@@ -8,6 +8,7 @@ import LibTinyWLHS.KeyBinding.KeyBindings
 import LibTinyWLHS.KeyBinding.KeySyms
 import qualified LibTinyWLHS.Server.FFI as FFI
 import LibTinyWLHS.Server.Types (TinyWLServer)
+import Setup
 import System.Process (spawnProcess)
 import WLR.Util.Log
 
@@ -28,6 +29,16 @@ appConfig =
         , terminalEmulator = "kitty" -- I use kitty as my emulator, alacritty is also a popular choice
         }
 
+-- Process to run on startup with the program name and an array of arguments to pass to it
+startingApps :: IO ()
+startingApps = do
+    startUpProcess
+        [ -- [ ("kitty", [])
+          -- ,
+          ("yambar", [])
+        , ("wbg", ["~/.wallpapers/haskell.png"])
+        ]
+
 customKeybindings
     :: Ptr WlDisplay -> Ptr TinyWLServer -> IO (FunPtr (CUInt -> IO ()))
 customKeybindings display server = do
@@ -41,6 +52,7 @@ customKeybindings display server = do
                 wlr_log WLR_INFO "Mod + s pressed, spawning a terminal emulator"
                 -- for this key event a process is spawned in Haskell
                 _ <- spawnProcess (terminalEmulator appConfig) []
+                -- _ <- spawnProcess "swaybg" ["-i", "~/.wallpapers/haskell.png", "-m", "fill"]
                 pure ()
 
             when (sym == keySymToInt KEY_a) $ do
@@ -73,7 +85,7 @@ customKeybindings display server = do
                         , "--fn"
                         , "monospace 12" -- font
                         , "-W"
-                        , "kitty" ++ " -e"
+                        , terminalEmulator appConfig ++ " -e"
                         ] -- for this key event a process is spawned in Haskell
                 pure ()
 
@@ -83,15 +95,18 @@ customKeybindings display server = do
                 -- for this event we call a Wayland FFI function
                 FFI.c_wl_display_terminate display
                 pure ()
-            when (sym == keySymToInt KEY_d || sym == keySymToInt KEY_v) $ do
-                -- You can also use logical OR
-                wlr_log WLR_INFO "Mod + d pressed, cycling windows"
-                result <- FFI.c_cycle_windows server
-                ( if result
-                        then wlr_log WLR_INFO "window cycled"
-                        else wlr_log WLR_INFO "Window cycling failed, Only one window"
-                    )
+            when
+                ( sym == keySymToInt KEY_d || sym == keySymToInt KEY_v || sym == keySymToInt KEY_l
+                )
+                $ do
+                    -- You can also use logical OR
+                    wlr_log WLR_INFO "Mod + d pressed, cycling windows"
+                    result <- FFI.c_cycle_windows server
+                    ( if result
+                            then wlr_log WLR_INFO "window cycled"
+                            else wlr_log WLR_INFO "Window cycling failed, Only one window"
+                        )
 
-                pure ()
+                    pure ()
 
     mkKeybindingHandler handler

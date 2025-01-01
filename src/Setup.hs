@@ -1,11 +1,13 @@
 module Setup where
 
+import Control.Monad
 import Foreign.Ptr
 import qualified LibTinyWLHS.Compositor.FFI as FFI
 import qualified LibTinyWLHS.Compositor.Types as FFI
 import qualified LibTinyWLHS.Server.FFI as FFI
 import qualified LibTinyWLHS.Server.Server as Server
 import qualified LibTinyWLHS.Server.Types as FFI
+import System.Process
 import WLR.Util.Log
 
 setupServer :: IO (Maybe (Ptr FFI.TinyWLServer, Ptr FFI.WlrRenderer))
@@ -72,3 +74,11 @@ commandLineArguments args = do
             wlr_log
                 WLR_INFO
                 "Command line arguments no longer supported, please configure app in Config.hs"
+
+startUpProcess :: [(String, [String])] -> IO ()
+startUpProcess apps = do
+    wlr_log WLR_INFO "Starting up applications"
+    forM_ apps $ \(app, args) -> do
+        wlr_log WLR_INFO $ "Starting up " ++ app
+        void $ createProcess (proc app args)
+    wlr_log WLR_INFO "Applications started"
