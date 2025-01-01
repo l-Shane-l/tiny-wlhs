@@ -3,10 +3,11 @@
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
 
 {-# HLINT ignore "Use camelCase" #-}
-module LibTinyWLHS.KeyBinding.KeySyms (
-    KeySym (..),
-    keySymToInt,
-) where
+module LibTinyWLHS.KeyBinding.KeySyms
+    ( KeySym (..)
+    , keySymToInt
+    )
+where
 
 import Foreign.C.Types (CUInt)
 

@@ -3,7 +3,8 @@ module LibTinyWLHS.KeyBinding.KeyBindings where
 import Foreign.C.Types (CUInt (..)) -- Note the (..) to import the constructor
 import Foreign.Ptr (FunPtr)
 
-foreign import ccall "wrapper" mkKeybindingHandler :: (CUInt -> IO ()) -> IO (FunPtr (CUInt -> IO ()))
+foreign import ccall "wrapper"
+    mkKeybindingHandler :: (CUInt -> IO ()) -> IO (FunPtr (CUInt -> IO ()))
 
 data Modifier
     = ModLogo -- WLR_MODIFIER_LOGO

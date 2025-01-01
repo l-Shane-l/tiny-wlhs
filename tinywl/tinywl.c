@@ -1063,7 +1063,14 @@ bool server_init(struct tinywl_server *server) {
     return false;
   }
 
-  printf("server setup 1 phase 1 complete");
+  // The setup is currently diffived between here and
+  // A similar function implemented in haskell
+  // Ultimately, this code here will be moved to haskell
+  // , however its convient to have it here while there
+  // is still a lot of protocol support to be added and this
+  // is always done initialally in C
+
+  printf("server setup phase 1 complete");
 
   // Protocol support now second
   server->xdg_activation = wlr_xdg_activation_v1_create(server->wl_display);

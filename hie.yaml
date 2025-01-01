@@ -35,3 +35,6 @@ cradle:
 
     - path: "./wlhs/src"
       component: "lib:wlhs-bindings"
+
+formatting:
+  provider: fourmolu

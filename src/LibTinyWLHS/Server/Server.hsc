@@ -13,6 +13,8 @@ import LibTinyWLHS.Server.Types (TinyWLServer)
 
 type TinyWLServerPtr = Ptr TinyWLServer
 
+{-- These functions are currently needed because the structs are implemented in the C in tinwl, In the future I intend to move the structs to wlhs --}
+
 -- Getter for wl_display
 getWlDisplay :: TinyWLServerPtr -> IO (Ptr WlDisplay)
 getWlDisplay ptr = #{peek struct tinywl_server, wl_display} ptr
