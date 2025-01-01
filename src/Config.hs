@@ -27,9 +27,11 @@ appConfig =
         , terminalEmulator = "kitty" -- I use kitty as my emulator, alacritty is also a popular choice
         }
 
-customKeybindings :: Ptr WlDisplay -> Ptr TinyWLServer -> IO (FunPtr (CUInt -> IO ()))
+customKeybindings
+    :: Ptr WlDisplay -> Ptr TinyWLServer -> IO (FunPtr (CUInt -> IO ()))
 customKeybindings display server = do
-    let handler :: CUInt -> IO ()
+    let
+        handler :: CUInt -> IO ()
         handler sym = do
             -- Add your custom key event handler heres
             wlr_log WLR_INFO $ "Handler called with sym: " ++ show sym -- This will long as an int and key pressed while the mod key is held down
@@ -82,7 +84,10 @@ customKeybindings display server = do
                 -- You can also use logical OR
                 wlr_log WLR_INFO "Mod + d pressed, cycling windows"
                 result <- FFI.c_cycle_windows server
-                (if result then wlr_log WLR_INFO "window cycled" else wlr_log WLR_INFO "Window cycling failed, Only one window")
+                ( if result
+                        then wlr_log WLR_INFO "window cycled"
+                        else wlr_log WLR_INFO "Window cycling failed, Only one window"
+                    )
 
                 pure ()
 

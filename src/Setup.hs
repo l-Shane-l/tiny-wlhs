@@ -69,4 +69,6 @@ commandLineArguments args = do
         ("-h" : _) -> do
             wlr_log WLR_INFO "Please read the README for instructions on using this app"
         _ -> do
-            wlr_log WLR_INFO "Command line arguments no longer supported, please configure app in Config.hs"
+            wlr_log
+                WLR_INFO
+                "Command line arguments no longer supported, please configure app in Config.hs"
