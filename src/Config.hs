@@ -36,7 +36,7 @@ startingApps = do
         [ -- [ ("kitty", [])
           -- ,
           ("yambar", [])
-        , ("wbg", ["~/.wallpapers/haskell.png"])
+          -- , ("wbg", ["~/.wallpapers/haskell.png"])
         ]
 
 customKeybindings
@@ -57,7 +57,7 @@ customKeybindings display server = do
 
             when (sym == keySymToInt KEY_a) $ do
                 -- simple match to key events defined in LibTinyWL.KeyBinding.KeySyms
-                wlr_log WLR_INFO "Mod + a pressed, spawning a terminal emulator"
+                wlr_log WLR_INFO "Mod + a pressed, running beMenu"
                 _ <-
                     spawnProcess
                         "bemenu-run"
