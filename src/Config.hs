@@ -18,7 +18,8 @@ data Config = Config
     , terminalEmulator :: String
     }
 
-appConfig :: Config -- Customize your app here, to help I placed the options in the comments
+-- Customize your app here, to help I placed the options in the comments
+appConfig :: Config
 appConfig =
     Config
         { logLevel = WLR_DEBUG -- WLR_INFO | WLR_DEBUG | WLR_SILENT | WLR_ERROR
@@ -34,11 +35,12 @@ customKeybindings display server = do
         handler :: CUInt -> IO ()
         handler sym = do
             -- Add your custom key event handler heres
-            wlr_log WLR_INFO $ "Handler called with sym: " ++ show sym -- This will long as an int and key pressed while the mod key is held down
+            wlr_log WLR_INFO $ "Handler called with sym: " ++ show sym
             when (sym == keySymToInt KEY_s) $ do
                 -- simple match to key events defined in LibTinyWL.KeyBinding.KeySyms
                 wlr_log WLR_INFO "Mod + s pressed, spawning a terminal emulator"
-                _ <- spawnProcess (terminalEmulator appConfig) [] -- for this key event a process is spawned in Haskell
+                -- for this key event a process is spawned in Haskell
+                _ <- spawnProcess (terminalEmulator appConfig) []
                 pure ()
 
             when (sym == keySymToInt KEY_a) $ do
@@ -46,7 +48,7 @@ customKeybindings display server = do
                 wlr_log WLR_INFO "Mod + a pressed, spawning a terminal emulator"
                 _ <-
                     spawnProcess
-                        ("bemenu-run")
+                        "bemenu-run"
                         [ "-i" -- case insensitive
                         , "-l"
                         , "10" -- show 10 lines
@@ -78,7 +80,8 @@ customKeybindings display server = do
             when (sym == keySymToInt KEY_c) $ do
                 -- the key Events just show up here as ints so you can also match against a raw int
                 wlr_log WLR_INFO "Mod + c pressed closing server"
-                FFI.c_wl_display_terminate display -- for this event we call a Wayland FFI function
+                -- for this event we call a Wayland FFI function
+                FFI.c_wl_display_terminate display
                 pure ()
             when (sym == keySymToInt KEY_d || sym == keySymToInt KEY_v) $ do
                 -- You can also use logical OR
