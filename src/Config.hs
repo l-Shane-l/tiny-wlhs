@@ -37,7 +37,7 @@ startingApps = do
           -- ,
           ("yambar", [])
         , -- , ("wbg", ["~/.wallpapers/haskell.png"])
-          ("swaybg", ["-i", "/home/shane/.wallpapers/haskell.png", "-m", "fill"])
+          ("swaybg", ["-i", "./images/haskell.png", "-m", "fill"])
         ]
 
 customKeybindings
