@@ -13,11 +13,9 @@ void focus_toplevel(struct tinywl_toplevel *toplevel,
   struct tinywl_server *server = toplevel->server;
   struct wlr_seat *seat = server->seat;
   struct wlr_surface *prev_surface = seat->keyboard_state.focused_surface;
-
   if (prev_surface == surface) {
     return;
   }
-
   if (prev_surface) {
     struct wlr_xdg_toplevel *prev_toplevel =
         wlr_xdg_toplevel_try_from_wlr_surface(prev_surface);
@@ -25,18 +23,16 @@ void focus_toplevel(struct tinywl_toplevel *toplevel,
       wlr_xdg_toplevel_set_activated(prev_toplevel, false);
     }
   }
-
   struct wlr_keyboard *keyboard = wlr_seat_get_keyboard(seat);
 
-  /* Move the toplevel to the front within the xdg_shell_tree */
-  wlr_scene_node_raise_to_top(&toplevel->scene_tree->node);
-  wlr_scene_node_raise_to_top(&server->xdg_shell_tree->node);
+  // Remove this line that was raising windows unconditionally:
+  // wlr_scene_node_raise_to_top(&toplevel->scene_tree->node);
 
+  // Instead, only reorder within the toplevel windows:
   wl_list_remove(&toplevel->link);
   wl_list_insert(&server->toplevels, &toplevel->link);
 
   wlr_xdg_toplevel_set_activated(toplevel->xdg_toplevel, true);
-
   if (keyboard != NULL) {
     wlr_seat_keyboard_notify_enter(seat, toplevel->xdg_toplevel->base->surface,
                                    keyboard->keycodes, keyboard->num_keycodes,

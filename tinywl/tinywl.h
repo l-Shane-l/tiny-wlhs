@@ -136,6 +136,16 @@ struct tinywl_toplevel_decoration {
   struct wl_listener request_mode;
 };
 
+struct reserved_area {
+  int x, y;
+  int width, height;
+};
+
+struct output_layout_data {
+  struct reserved_area reserved;
+  struct wlr_box usable_area;
+};
+
 // Add to tinywl_server struct:
 
 struct tinywl_layer_surface {
