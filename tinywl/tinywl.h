@@ -178,6 +178,17 @@ struct tinywl_toplevel {
   struct tinywl_server *server;
   struct wlr_xdg_toplevel *xdg_toplevel;
   struct wlr_scene_tree *scene_tree;
+
+  struct wlr_scene_tree *border_tree;
+
+  // Border rectangles
+  struct wlr_scene_rect *border_top;
+  struct wlr_scene_rect *border_bottom;
+  struct wlr_scene_rect *border_left;
+  struct wlr_scene_rect *border_right;
+
+  struct wl_listener commit;
+
   struct wl_listener map;
   struct wl_listener unmap;
   struct wl_listener destroy;
@@ -201,6 +212,8 @@ struct tinywl_server *server_create(void);
 void server_destroy(struct tinywl_server *server);
 bool server_init(struct tinywl_server *server);
 const char *server_start(struct tinywl_server *server);
+static void set_border_color(struct tinywl_toplevel *toplevel, bool focused);
+static void update_border_position(struct tinywl_toplevel *toplevel);
 void server_run(struct tinywl_server *server);
 void server_set_startup_command(const char *cmd);
 bool cycle_windows(struct tinywl_server *server);
