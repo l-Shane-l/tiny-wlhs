@@ -1,10 +1,10 @@
 # TinyWL Haskell Implementation
 
-## Project Overview
-
 A Wayland compositor written in Haskell, providing a configurable and programmable window management system. This project implements the TinyWL reference compositor with Haskell bindings, allowing for dynamic configuration and control through Haskell.
 
 The app can be configured in Config.hs
+
+## PLEASE NOTE this project is still under development and is not yet ready for use as a daily driver.
 
 ## Features
 
@@ -17,8 +17,13 @@ The app can be configured in Config.hs
 - Support for notification daemons like mako
 - support for simple bars like yambar (more complex bars like waybar is not support yet)
 - Can be run from an X11 session or a TTY
+- Spawn processes at startup, configure via Haskell
+- Window borders
+- Background with something like swaybg
+- Wayland layer support for background, bottom, top, and overlay
+- Support for reserved areas
 
-More features coming, the intention is to get feature parity with something like sway
+More features coming, the intention is to get feature parity with something like sway or xmonad
 
 ## DEMO
 

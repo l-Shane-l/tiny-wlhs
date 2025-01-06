@@ -74,3 +74,12 @@ All notable changes to this project will be documented in this file.
 - Better logging
 - Better dev tooling for the C code in the form of support for clangd
 - Support for seatd
+
+## 0.1.1.1 - 2025-06-01
+
+- support for borders
+- wayland client config
+- background images
+- clients now set window size to what is available
+- support for reserved area
+- layers added
