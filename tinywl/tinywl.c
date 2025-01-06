@@ -23,19 +23,15 @@ void focus_toplevel(struct tinywl_toplevel *toplevel,
         wlr_xdg_toplevel_try_from_wlr_surface(prev_surface);
     if (prev_toplevel != NULL) {
       wlr_xdg_toplevel_set_activated(prev_toplevel, false);
-      // Find the tinywl_toplevel for this surface and update its border
-      struct tinywl_toplevel *prev_tw_toplevel;
-      wl_list_for_each(prev_tw_toplevel, &server->toplevels, link) {
-        if (prev_tw_toplevel->xdg_toplevel == prev_toplevel) {
-          set_border_color(prev_tw_toplevel, false);
-          break;
-        }
-      }
     }
   }
 
+  // Raise both the window and its borders
+  wlr_scene_node_raise_to_top(&toplevel->scene_tree->node);
+  wlr_scene_node_raise_to_top(&toplevel->border_tree->node);
+
   wlr_xdg_toplevel_set_activated(toplevel->xdg_toplevel, true);
-  set_border_color(toplevel, true); // Set focused border color
+  set_border_color(toplevel, true);
 
   struct wlr_keyboard *keyboard = wlr_seat_get_keyboard(seat);
   if (keyboard != NULL) {
@@ -44,6 +40,7 @@ void focus_toplevel(struct tinywl_toplevel *toplevel,
                                    &keyboard->modifiers);
   }
 }
+
 static void layer_surface_destroy(struct wl_listener *listener, void *data);
 static void layer_surface_map(struct wl_listener *listener, void *data);
 static void layer_surface_unmap(struct wl_listener *listener, void *data);
@@ -70,11 +67,46 @@ bool cycle_windows(struct tinywl_server *server) {
   if (wl_list_length(&server->toplevels) < 2) {
     return false;
   }
-  struct tinywl_toplevel *next_toplevel =
-      wl_container_of(server->toplevels.prev, next_toplevel, link);
-  focus_toplevel(next_toplevel, next_toplevel->xdg_toplevel->base->surface);
+
+  // Find the currently focused window
+  struct wlr_surface *focused_surface =
+      server->seat->keyboard_state.focused_surface;
+  struct tinywl_toplevel *current = NULL;
+  struct tinywl_toplevel *first = NULL;
+  struct tinywl_toplevel *next = NULL;
+
+  // Find the current and next window to focus
+  struct tinywl_toplevel *toplevel;
+  wl_list_for_each(toplevel, &server->toplevels, link) {
+    if (!first) {
+      first = toplevel;
+    }
+
+    if (current && !next) {
+      next = toplevel;
+      break;
+    }
+
+    if (toplevel->xdg_toplevel->base->surface == focused_surface) {
+      current = toplevel;
+    }
+  }
+
+  // If we didn't find a next window, wrap around to the first
+  if (!next) {
+    next = first;
+  }
+
+  // If we somehow didn't find a window to focus, return false
+  if (!next) {
+    return false;
+  }
+
+  // Focus the next window
+  focus_toplevel(next, next->xdg_toplevel->base->surface);
   return true;
 }
+
 static bool handle_keybinding(struct tinywl_server *server, xkb_keysym_t sym) {
   /*
    * Here we handle compositor keybindings. This is when the compositor is
@@ -371,17 +403,9 @@ static void process_cursor_move(struct tinywl_server *server, uint32_t time) {
 }
 
 static void process_cursor_resize(struct tinywl_server *server, uint32_t time) {
-  /*
-   * Resizing the grabbed toplevel can be a little bit complicated, because we
-   * could be resizing from any corner or edge. This not only resizes the
-   * toplevel on one or two axes, but can also move the toplevel if you resize
-   * from the top or left edges (or top-left corner).
-   *
-   * Note that some shortcuts are taken here. In a more fleshed-out
-   * compositor, you'd wait for the client to prepare a buffer at the new
-   * size, then commit any movement that was prepared.
-   */
   struct tinywl_toplevel *toplevel = server->grabbed_toplevel;
+  const int border_thickness = 5;
+
   double border_x = server->cursor->x - server->grab_x;
   double border_y = server->cursor->y - server->grab_y;
   int new_left = server->grab_geobox.x;
@@ -391,34 +415,43 @@ static void process_cursor_resize(struct tinywl_server *server, uint32_t time) {
 
   if (server->resize_edges & WLR_EDGE_TOP) {
     new_top = border_y;
-    if (new_top >= new_bottom) {
-      new_top = new_bottom - 1;
+    if (new_top >= new_bottom - 2 * border_thickness) {
+      new_top = new_bottom - 2 * border_thickness - 1;
     }
   } else if (server->resize_edges & WLR_EDGE_BOTTOM) {
     new_bottom = border_y;
-    if (new_bottom <= new_top) {
-      new_bottom = new_top + 1;
+    if (new_bottom <= new_top + 2 * border_thickness) {
+      new_bottom = new_top + 2 * border_thickness + 1;
     }
   }
   if (server->resize_edges & WLR_EDGE_LEFT) {
     new_left = border_x;
-    if (new_left >= new_right) {
-      new_left = new_right - 1;
+    if (new_left >= new_right - 2 * border_thickness) {
+      new_left = new_right - 2 * border_thickness - 1;
     }
   } else if (server->resize_edges & WLR_EDGE_RIGHT) {
     new_right = border_x;
-    if (new_right <= new_left) {
-      new_right = new_left + 1;
+    if (new_right <= new_left + 2 * border_thickness) {
+      new_right = new_left + 2 * border_thickness + 1;
     }
   }
 
   struct wlr_box geo_box;
   wlr_xdg_surface_get_geometry(toplevel->xdg_toplevel->base, &geo_box);
+
   wlr_scene_node_set_position(&toplevel->scene_tree->node, new_left - geo_box.x,
                               new_top - geo_box.y);
 
-  int new_width = new_right - new_left;
-  int new_height = new_bottom - new_top;
+  // Calculate new dimensions accounting for borders
+  int new_width = new_right - new_left - (2 * border_thickness);
+  int new_height = new_bottom - new_top - (2 * border_thickness);
+
+  // Ensure minimum size
+  if (new_width < 1)
+    new_width = 1;
+  if (new_height < 1)
+    new_height = 1;
+
   wlr_xdg_toplevel_set_size(toplevel->xdg_toplevel, new_width, new_height);
   update_border_position(toplevel);
 }
@@ -635,24 +668,43 @@ static void update_border_position(struct tinywl_toplevel *toplevel) {
 
   const int border_thickness =
       5; // Adjust this value for thicker/thinner borders
-  const int width = geo_box.width + 2 * border_thickness;
-  const int height = geo_box.height + 2 * border_thickness;
 
-  // Position the borders around the window
-  wlr_scene_node_set_position(&toplevel->border_top->node, -border_thickness,
-                              -border_thickness);
-  wlr_scene_node_set_position(&toplevel->border_bottom->node, -border_thickness,
-                              height - border_thickness);
-  wlr_scene_node_set_position(&toplevel->border_left->node, -border_thickness,
-                              -border_thickness);
+  // Position the borders starting OUTSIDE the window bounds
+  // This ensures they're visible even at screen edges
+  wlr_scene_node_set_position(&toplevel->border_top->node,
+                              -border_thickness,  // Start left of window
+                              -border_thickness); // Start above window
+
+  wlr_scene_node_set_position(&toplevel->border_bottom->node,
+                              -border_thickness, // Start left of window
+                              geo_box.height);   // Start at bottom of window
+
+  wlr_scene_node_set_position(&toplevel->border_left->node,
+                              -border_thickness,  // Start left of window
+                              -border_thickness); // Start above window
+
   wlr_scene_node_set_position(&toplevel->border_right->node,
-                              width - border_thickness, -border_thickness);
+                              geo_box.width, // Start at right edge of window
+                              -border_thickness); // Start above window
 
-  // Set the size of the borders
-  wlr_scene_rect_set_size(toplevel->border_top, width, border_thickness);
-  wlr_scene_rect_set_size(toplevel->border_bottom, width, border_thickness);
-  wlr_scene_rect_set_size(toplevel->border_left, border_thickness, height);
-  wlr_scene_rect_set_size(toplevel->border_right, border_thickness, height);
+  // Set the size of the borders to extend beyond window bounds
+  wlr_scene_rect_set_size(toplevel->border_top,
+                          geo_box.width +
+                              (border_thickness * 2), // Extra width for corners
+                          border_thickness);
+
+  wlr_scene_rect_set_size(toplevel->border_bottom,
+                          geo_box.width +
+                              (border_thickness * 2), // Extra width for corners
+                          border_thickness);
+
+  wlr_scene_rect_set_size(
+      toplevel->border_left, border_thickness,
+      geo_box.height + (border_thickness * 2)); // Extra height for corners
+
+  wlr_scene_rect_set_size(
+      toplevel->border_right, border_thickness,
+      geo_box.height + (border_thickness * 2)); // Extra height for corners
 }
 
 static void server_new_output(struct wl_listener *listener, void *data) {
@@ -725,12 +777,52 @@ static void server_new_output(struct wl_listener *listener, void *data) {
 
 static void xdg_toplevel_map(struct wl_listener *listener, void *data) {
   struct tinywl_toplevel *toplevel = wl_container_of(listener, toplevel, map);
+  struct wlr_output *output = wlr_output_layout_output_at(
+      toplevel->server->output_layout, toplevel->server->cursor->x,
+      toplevel->server->cursor->y);
+
+  struct wlr_box full_area = {0};
+  wlr_output_effective_resolution(output, &full_area.width, &full_area.height);
+  const int border_thickness = 5;
+
+  // Calculate initial usable area
+  int usable_width = full_area.width - (2 * border_thickness);
+  int usable_height = full_area.height - (2 * border_thickness);
+
+  // Account for layer surfaces (like yambar)
+  struct tinywl_layer_surface *layer_surface;
+  wl_list_for_each(layer_surface, &toplevel->server->layer_surfaces, link) {
+    struct wlr_layer_surface_v1 *wlr_layer_surface =
+        layer_surface->layer_surface;
+
+    if (wlr_layer_surface->output != output ||
+        !wlr_layer_surface->surface->mapped ||
+        wlr_layer_surface->current.exclusive_zone <= 0) {
+      continue;
+    }
+
+    uint32_t anchor = wlr_layer_surface->current.anchor;
+    int32_t exclusive_zone = wlr_layer_surface->current.exclusive_zone;
+
+    if (anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP) {
+      usable_height -= exclusive_zone;
+    } else if (anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM) {
+      usable_height -= exclusive_zone;
+    }
+  }
+
+  // Set the window size to use the full usable area
+  wlr_xdg_toplevel_set_size(toplevel->xdg_toplevel, usable_width,
+                            usable_height);
 
   wl_list_insert(&toplevel->server->toplevels, &toplevel->link);
-
-  // Add these lines:
   update_border_position(toplevel);
-  set_border_color(toplevel, false); // Start unfocused
+  set_border_color(toplevel, false);
+
+  wlr_scene_node_set_enabled(&toplevel->border_top->node, true);
+  wlr_scene_node_set_enabled(&toplevel->border_bottom->node, true);
+  wlr_scene_node_set_enabled(&toplevel->border_left->node, true);
+  wlr_scene_node_set_enabled(&toplevel->border_right->node, true);
 
   focus_toplevel(toplevel, toplevel->xdg_toplevel->base->surface);
 }
@@ -877,19 +969,19 @@ static void server_new_xdg_surface(struct wl_listener *listener, void *data) {
   toplevel->server = server;
   toplevel->xdg_toplevel = xdg_surface->toplevel;
 
-  // Create border tree first
-  toplevel->border_tree = wlr_scene_tree_create(server->xdg_shell_tree);
-  if (!toplevel->border_tree) {
-    wlr_log(WLR_ERROR, "Failed to create border tree");
+  // Create scene tree first
+  toplevel->scene_tree = wlr_scene_xdg_surface_create(
+      server->xdg_shell_tree, toplevel->xdg_toplevel->base);
+  if (!toplevel->scene_tree) {
+    wlr_log(WLR_ERROR, "Failed to create scene tree for toplevel");
     free(toplevel);
     return;
   }
 
-  // Create scene tree inside border tree
-  toplevel->scene_tree = wlr_scene_xdg_surface_create(
-      toplevel->border_tree, toplevel->xdg_toplevel->base);
-  if (!toplevel->scene_tree) {
-    wlr_log(WLR_ERROR, "Failed to create scene tree for toplevel");
+  // Create border tree as child of scene tree
+  toplevel->border_tree = wlr_scene_tree_create(toplevel->scene_tree);
+  if (!toplevel->border_tree) {
+    wlr_log(WLR_ERROR, "Failed to create border tree");
     free(toplevel);
     return;
   }
@@ -1117,11 +1209,13 @@ static void update_usable_area(struct tinywl_server *server,
   struct wlr_box full_area = {0};
   wlr_output_effective_resolution(output, &full_area.width, &full_area.height);
 
-  // Start with no reserved space
-  int usable_x = 0;
-  int usable_y = 0;
-  int usable_width = full_area.width;
-  int usable_height = full_area.height;
+  const int border_thickness = 5; // Define border thickness
+
+  // Start with no reserved space, but account for borders
+  int usable_x = border_thickness;
+  int usable_y = border_thickness;
+  int usable_width = full_area.width - (2 * border_thickness);
+  int usable_height = full_area.height - (2 * border_thickness);
 
   // For each layer surface on this output, adjust based on exclusive zones
   struct tinywl_layer_surface *layer_surface;
@@ -1138,33 +1232,15 @@ static void update_usable_area(struct tinywl_server *server,
     uint32_t anchor = wlr_layer_surface->current.anchor;
     int32_t exclusive_zone = wlr_layer_surface->current.exclusive_zone;
 
-    // Handle exclusive zones based on the primary anchor edge
-    if (anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP &&
-        anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT &&
-        anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_RIGHT) {
-      // Anchored to the top edge, spanning the whole width
+    if (anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP) {
       usable_y += exclusive_zone;
       usable_height -= exclusive_zone;
-    } else if (anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM &&
-               anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT &&
-               anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_RIGHT) {
-      // Anchored to the bottom edge, spanning the whole width
+    } else if (anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM) {
       usable_height -= exclusive_zone;
-    } else if (anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT &&
-               anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP &&
-               anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM) {
-      // Anchored to the left edge, spanning the whole height
-      usable_x += exclusive_zone;
-      usable_width -= exclusive_zone;
-    } else if (anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_RIGHT &&
-               anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP &&
-               anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM) {
-      // Anchored to the right edge, spanning the whole height
-      usable_width -= exclusive_zone;
     }
   }
 
-  // Adjust the position of the XDG shell tree
+  // Apply the usable area to the xdg_shell_tree
   wlr_scene_node_set_position(&server->xdg_shell_tree->node, usable_x,
                               usable_y);
 }
