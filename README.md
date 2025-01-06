@@ -126,7 +126,7 @@ In appConfig you can set:
 - The Mod Key
 - Terminal Emulator
 
-```
+```haskell
 appConfig :: Config -- Customize your app here, to help I placed the options in the comments
 appConfig =
     Config
@@ -143,7 +143,7 @@ You can also set up your own Key even listeners to do any of the following:
 - interact and control the compositor by calling FFI and Haskell functions in the LibTinyWLHS library
 - change current key bindings to your preference
 
-```
+```haskell
 customKeybindings :: Ptr WlDisplay -> Ptr TinyWLServer -> IO (FunPtr (CUInt -> IO ()))
 customKeybindings display server = do
     let handler :: CUInt -> IO ()
@@ -169,6 +169,23 @@ customKeybindings display server = do
                 pure ()
     mkKeybindingHandler handler
 ```
+
+You can also set up process or apps to start on launch of the compositor
+
+```haskell
+-- Process to run on startup with the program name and an array of arguments to pass to it
+startingApps :: IO ()
+startingApps = do
+    startUpProcess
+        [ -- [ ("kitty", [])
+          -- ,
+          ("yambar", [])
+        , -- , ("wbg", ["~/.wallpapers/haskell.png"])
+          ("swaybg", ["-i", "./images/haskell.png", "-m", "fill"])
+        ]
+```
+
+Here you can see I have yambar(status panel), swaybg(background image) set to start on launch
 
 ## Development Status
 

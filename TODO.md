@@ -27,3 +27,9 @@ At the ability to have multiple screens and cycle through configurations
 ### locking support
 
 This is the most complex and will require a secure means to lock the system
+
+## Code quality
+
+Improve config and documentation on how to get started
+
+Refactor C into manageable parts
