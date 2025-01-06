@@ -132,7 +132,7 @@ runWLHS config = do
                             setEnv "WAYLAND_DISPLAY" socketStr
                             wlr_log WLR_INFO $ "WAYLAND_DISPLAY set to " ++ socketStr
                             withCString (startupApplication config) FFI.c_server_set_startup_command
-                            setModKey ModAlt
+                            setModKey $ modKey config
                             handlerPtr <- customKeybindings wlDisplay server config
                             wlr_log WLR_DEBUG $ "Handler created: " ++ show handlerPtr
                             FFI.c_set_keybinding_handler server handlerPtr
