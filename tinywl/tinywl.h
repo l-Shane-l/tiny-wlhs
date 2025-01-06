@@ -42,6 +42,7 @@
 #include <wlr/types/wlr_subcompositor.h>
 #include <wlr/types/wlr_xcursor_manager.h>
 #include <wlr/types/wlr_xdg_activation_v1.h>
+#include <wlr/types/wlr_xdg_decoration_v1.h>
 #include <wlr/types/wlr_xdg_shell.h>
 #include <wlr/util/log.h>
 #include <xkbcommon/xkbcommon.h>
@@ -114,7 +115,38 @@ struct tinywl_server {
   struct wl_listener new_activation_request;
 
   struct wlr_session *session;
+
+  struct wlr_scene_tree *layer_tree_background;
+  struct wlr_scene_tree *layer_tree_bottom;
+  struct wlr_scene_tree *layer_tree_top;
+  struct wlr_scene_tree *layer_tree_overlay;
+
+  struct wl_list decorations; // tinywl_toplevel_decoration::link
+  struct wlr_xdg_decoration_manager_v1 *xdg_decoration_manager;
+  struct wl_listener new_xdg_decoration;
+
+  struct wlr_scene_tree *xdg_shell_tree;
 };
+
+struct tinywl_toplevel_decoration {
+  struct wl_list link;
+  struct tinywl_server *server;
+  struct wlr_xdg_toplevel_decoration_v1 *wlr_decoration;
+  struct wl_listener destroy;
+  struct wl_listener request_mode;
+};
+
+struct reserved_area {
+  int x, y;
+  int width, height;
+};
+
+struct output_layout_data {
+  struct reserved_area reserved;
+  struct wlr_box usable_area;
+};
+
+// Add to tinywl_server struct:
 
 struct tinywl_layer_surface {
   struct wl_list link;
@@ -146,6 +178,17 @@ struct tinywl_toplevel {
   struct tinywl_server *server;
   struct wlr_xdg_toplevel *xdg_toplevel;
   struct wlr_scene_tree *scene_tree;
+
+  struct wlr_scene_tree *border_tree;
+
+  // Border rectangles
+  struct wlr_scene_rect *border_top;
+  struct wlr_scene_rect *border_bottom;
+  struct wlr_scene_rect *border_left;
+  struct wlr_scene_rect *border_right;
+
+  struct wl_listener commit;
+
   struct wl_listener map;
   struct wl_listener unmap;
   struct wl_listener destroy;
@@ -169,6 +212,8 @@ struct tinywl_server *server_create(void);
 void server_destroy(struct tinywl_server *server);
 bool server_init(struct tinywl_server *server);
 const char *server_start(struct tinywl_server *server);
+static void set_border_color(struct tinywl_toplevel *toplevel, bool focused);
+static void update_border_position(struct tinywl_toplevel *toplevel);
 void server_run(struct tinywl_server *server);
 void server_set_startup_command(const char *cmd);
 bool cycle_windows(struct tinywl_server *server);

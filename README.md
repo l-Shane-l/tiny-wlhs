@@ -1,10 +1,10 @@
 # TinyWL Haskell Implementation
 
-## Project Overview
-
 A Wayland compositor written in Haskell, providing a configurable and programmable window management system. This project implements the TinyWL reference compositor with Haskell bindings, allowing for dynamic configuration and control through Haskell.
 
 The app can be configured in Config.hs
+
+## PLEASE NOTE this project is still under development and is not yet ready for use as a daily driver.
 
 ## Features
 
@@ -17,8 +17,13 @@ The app can be configured in Config.hs
 - Support for notification daemons like mako
 - support for simple bars like yambar (more complex bars like waybar is not support yet)
 - Can be run from an X11 session or a TTY
+- Spawn processes at startup, configure via Haskell
+- Window borders
+- Background with something like swaybg
+- Wayland layer support for background, bottom, top, and overlay
+- Support for reserved areas
 
-More features coming, the intention is to get feature parity with something like sway
+More features coming, the intention is to get feature parity with something like sway or xmonad
 
 ## DEMO
 
@@ -121,7 +126,7 @@ In appConfig you can set:
 - The Mod Key
 - Terminal Emulator
 
-```
+```haskell
 appConfig :: Config -- Customize your app here, to help I placed the options in the comments
 appConfig =
     Config
@@ -138,7 +143,7 @@ You can also set up your own Key even listeners to do any of the following:
 - interact and control the compositor by calling FFI and Haskell functions in the LibTinyWLHS library
 - change current key bindings to your preference
 
-```
+```haskell
 customKeybindings :: Ptr WlDisplay -> Ptr TinyWLServer -> IO (FunPtr (CUInt -> IO ()))
 customKeybindings display server = do
     let handler :: CUInt -> IO ()
@@ -164,6 +169,23 @@ customKeybindings display server = do
                 pure ()
     mkKeybindingHandler handler
 ```
+
+You can also set up process or apps to start on launch of the compositor
+
+```haskell
+-- Process to run on startup with the program name and an array of arguments to pass to it
+startingApps :: IO ()
+startingApps = do
+    startUpProcess
+        [ -- [ ("kitty", [])
+          -- ,
+          ("yambar", [])
+        , -- , ("wbg", ["~/.wallpapers/haskell.png"])
+          ("swaybg", ["-i", "./images/haskell.png", "-m", "fill"])
+        ]
+```
+
+Here you can see I have yambar(status panel), swaybg(background image) set to start on launch
 
 ## Development Status
 
