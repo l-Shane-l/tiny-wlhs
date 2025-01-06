@@ -536,23 +536,34 @@ static void server_cursor_motion_absolute(struct wl_listener *listener,
 }
 
 static void server_cursor_button(struct wl_listener *listener, void *data) {
-  /* This event is forwarded by the cursor when a pointer emits a button
-   * event. */
   struct tinywl_server *server =
       wl_container_of(listener, server, cursor_button);
   struct wlr_pointer_button_event *event = data;
-  /* Notify the client with pointer focus that a button press has occurred */
-  wlr_seat_pointer_notify_button(server->seat, event->time_msec, event->button,
-                                 event->state);
+
+  // Check for layer surface first
   double sx, sy;
-  struct wlr_surface *surface = NULL;
+  struct wlr_surface *surface =
+      layer_surface_at(server, server->cursor->x, server->cursor->y, &sx, &sy);
+
+  if (surface) {
+    // If we found a layer surface, focus it and forward the click
+    focus_layer_surface(server, surface);
+    wlr_seat_pointer_notify_button(server->seat, event->time_msec,
+                                   event->button, event->state);
+    return;
+  }
+
+  // If no layer surface, check for regular windows
+  surface = NULL;
   struct tinywl_toplevel *toplevel = desktop_toplevel_at(
       server, server->cursor->x, server->cursor->y, &surface, &sx, &sy);
+
+  wlr_seat_pointer_notify_button(server->seat, event->time_msec, event->button,
+                                 event->state);
+
   if (event->state == WLR_BUTTON_RELEASED) {
-    /* If you released any buttons, we exit interactive move/resize mode. */
     reset_cursor_mode(server);
   } else {
-    /* Focus that client if the button was _pressed_ */
     focus_toplevel(toplevel, surface);
   }
 }

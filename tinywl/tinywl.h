@@ -214,6 +214,8 @@ bool server_init(struct tinywl_server *server);
 const char *server_start(struct tinywl_server *server);
 static void set_border_color(struct tinywl_toplevel *toplevel, bool focused);
 static void update_border_position(struct tinywl_toplevel *toplevel);
+static void focus_layer_surface(struct tinywl_server *server,
+                                struct wlr_surface *surface);
 void server_run(struct tinywl_server *server);
 void server_set_startup_command(const char *cmd);
 bool cycle_windows(struct tinywl_server *server);
