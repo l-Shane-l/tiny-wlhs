@@ -26,6 +26,11 @@ data Config = Config
     , terminalEmulator :: String
     }
 
+data State = State
+    { display :: Ptr WlDisplay
+    , server :: Ptr TinyWLServer
+    }
+
 -- Process to run on startup with the program name and an array of arguments to pass to it
 startingApps :: IO ()
 startingApps = do
@@ -38,8 +43,8 @@ startingApps = do
         ]
 
 customKeybindings
-    :: Ptr WlDisplay -> Ptr TinyWLServer -> Config -> IO (FunPtr (CUInt -> IO ()))
-customKeybindings display server config = do
+    :: State -> Config -> IO (FunPtr (CUInt -> IO ()))
+customKeybindings state config = do
     let
         handler :: CUInt -> IO ()
         handler sym = do
@@ -91,7 +96,7 @@ customKeybindings display server config = do
                 -- the key Events just show up here as ints so you can also match against a raw int
                 wlr_log WLR_INFO "Mod + c pressed closing server"
                 -- for this event we call a Wayland FFI function
-                FFI.c_wl_display_terminate display
+                FFI.c_wl_display_terminate $ display state
                 pure ()
             when
                 ( sym == keySymToInt KEY_d || sym == keySymToInt KEY_v || sym == keySymToInt KEY_l
@@ -99,7 +104,7 @@ customKeybindings display server config = do
                 $ do
                     -- You can also use logical OR
                     wlr_log WLR_INFO "Mod + d pressed, cycling windows"
-                    result <- FFI.c_cycle_windows server
+                    result <- FFI.c_cycle_windows $ server state
                     ( if result
                             then wlr_log WLR_INFO "window cycled"
                             else wlr_log WLR_INFO "Window cycling failed, Only one window"
@@ -118,14 +123,14 @@ runWLHS config = do
     wlr_log WLR_INFO "Server destroyed, shutting down"
     case setup of
         Nothing -> wlr_log WLR_ERROR "Failed to Setup Server"
-        Just (server, renderer) -> do
-            initSuccess <- FFI.c_server_init server
+        Just (myServer, renderer) -> do
+            initSuccess <- FFI.c_server_init myServer
             if initSuccess
                 then do
                     wlr_log WLR_INFO "Server initialized successfully"
-                    wlDisplay <- Server.getWlDisplay server
+                    wlDisplay <- Server.getWlDisplay myServer
                     _ <- Compositor.initialize_compositor wlDisplay 5 renderer
-                    socket <- FFI.c_server_start server
+                    socket <- FFI.c_server_start myServer
                     if socket /= nullPtr
                         then do
                             socketStr <- peekCString socket
@@ -133,14 +138,14 @@ runWLHS config = do
                             wlr_log WLR_INFO $ "WAYLAND_DISPLAY set to " ++ socketStr
                             withCString (startupApplication config) FFI.c_server_set_startup_command
                             setModKey $ modKey config
-                            handlerPtr <- customKeybindings wlDisplay server config
+                            handlerPtr <- customKeybindings (State { display = wlDisplay, server = myServer} ) config
                             wlr_log WLR_DEBUG $ "Handler created: " ++ show handlerPtr
-                            FFI.c_set_keybinding_handler server handlerPtr
+                            FFI.c_set_keybinding_handler myServer handlerPtr
                             startingApps
                             wlr_log WLR_INFO "TinyWLHS started"
-                            FFI.c_server_run server
+                            FFI.c_server_run myServer
                         else wlr_log WLR_ERROR "Failed to start server"
                 else wlr_log WLR_ERROR "Failed to initialize server"
-            FFI.c_server_destroy server
+            FFI.c_server_destroy myServer
             wlr_log WLR_INFO "Server destroyed, shutting down"
 
