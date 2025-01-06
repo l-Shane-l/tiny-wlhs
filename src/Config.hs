@@ -3,14 +3,21 @@ module Config where
 import Control.Monad (when)
 import Foreign
 import Foreign.C (CUInt)
+import Foreign.C.String
+import System.Environment (getArgs, setEnv)
+import System.Process (spawnProcess)
+
+import qualified LibTinyWLHS.Compositor.Compositor as Compositor
 import LibTinyWLHS.Compositor.Types
 import LibTinyWLHS.KeyBinding.KeyBindings
 import LibTinyWLHS.KeyBinding.KeySyms
 import qualified LibTinyWLHS.Server.FFI as FFI
+import qualified LibTinyWLHS.Server.Server as Server
 import LibTinyWLHS.Server.Types (TinyWLServer)
+
 import Setup
-import System.Process (spawnProcess)
 import WLR.Util.Log
+
 
 data Config = Config
     { logLevel :: WLR_log_importance
@@ -18,16 +25,6 @@ data Config = Config
     , modKey :: Modifier
     , terminalEmulator :: String
     }
-
--- Customize your app here, to help I placed the options in the comments
-appConfig :: Config
-appConfig =
-    Config
-        { logLevel = WLR_DEBUG -- WLR_INFO | WLR_DEBUG | WLR_SILENT | WLR_ERROR
-        , startupApplication = "" -- can be any app that works with wayland, Leave blank for no startup app
-        , modKey = ModAlt -- ModAlt | ModCtrl | ModLogo | ModShift
-        , terminalEmulator = "kitty" -- I use kitty as my emulator, alacritty is also a popular choice
-        }
 
 -- Process to run on startup with the program name and an array of arguments to pass to it
 startingApps :: IO ()
@@ -41,8 +38,8 @@ startingApps = do
         ]
 
 customKeybindings
-    :: Ptr WlDisplay -> Ptr TinyWLServer -> IO (FunPtr (CUInt -> IO ()))
-customKeybindings display server = do
+    :: Ptr WlDisplay -> Ptr TinyWLServer -> Config -> IO (FunPtr (CUInt -> IO ()))
+customKeybindings display server config = do
     let
         handler :: CUInt -> IO ()
         handler sym = do
@@ -52,7 +49,7 @@ customKeybindings display server = do
                 -- simple match to key events defined in LibTinyWL.KeyBinding.KeySyms
                 wlr_log WLR_INFO "Mod + s pressed, spawning a terminal emulator"
                 -- for this key event a process is spawned in Haskell
-                _ <- spawnProcess (terminalEmulator appConfig) []
+                _ <- spawnProcess (terminalEmulator config) []
                 -- _ <- spawnProcess "swaybg" ["-i", "~/.wallpapers/haskell.png", "-m", "fill"]
                 pure ()
 
@@ -86,7 +83,7 @@ customKeybindings display server = do
                         , "--fn"
                         , "monospace 12" -- font
                         , "-W"
-                        , terminalEmulator appConfig ++ " -e"
+                        , terminalEmulator config ++ " -e"
                         ] -- for this key event a process is spawned in Haskell
                 pure ()
 
@@ -111,3 +108,39 @@ customKeybindings display server = do
                     pure ()
 
     mkKeybindingHandler handler
+
+runWLHS :: Config -> IO ()
+runWLHS config = do
+    wlr_log_init (logLevel config) nullFunPtr
+    args <- getArgs
+    commandLineArguments args
+    setup <- setupServer
+    wlr_log WLR_INFO "Server destroyed, shutting down"
+    case setup of
+        Nothing -> wlr_log WLR_ERROR "Failed to Setup Server"
+        Just (server, renderer) -> do
+            initSuccess <- FFI.c_server_init server
+            if initSuccess
+                then do
+                    wlr_log WLR_INFO "Server initialized successfully"
+                    wlDisplay <- Server.getWlDisplay server
+                    _ <- Compositor.initialize_compositor wlDisplay 5 renderer
+                    socket <- FFI.c_server_start server
+                    if socket /= nullPtr
+                        then do
+                            socketStr <- peekCString socket
+                            setEnv "WAYLAND_DISPLAY" socketStr
+                            wlr_log WLR_INFO $ "WAYLAND_DISPLAY set to " ++ socketStr
+                            withCString (startupApplication config) FFI.c_server_set_startup_command
+                            setModKey ModAlt
+                            handlerPtr <- customKeybindings wlDisplay server config
+                            wlr_log WLR_DEBUG $ "Handler created: " ++ show handlerPtr
+                            FFI.c_set_keybinding_handler server handlerPtr
+                            startingApps
+                            wlr_log WLR_INFO "TinyWLHS started"
+                            FFI.c_server_run server
+                        else wlr_log WLR_ERROR "Failed to start server"
+                else wlr_log WLR_ERROR "Failed to initialize server"
+            FFI.c_server_destroy server
+            wlr_log WLR_INFO "Server destroyed, shutting down"
+
