@@ -42,6 +42,12 @@ startingApps = do
           ("swaybg", ["-i", "./images/haskell.png", "-m", "fill"])
         ]
 
+cycleWindows :: State -> IO Bool
+cycleWindows state = FFI.c_cycle_windows $ server state
+
+terminate :: State -> IO ()
+terminate state = FFI.c_wl_display_terminate $ display state
+
 customKeybindings
     :: State -> Config -> IO (FunPtr (CUInt -> IO ()))
 customKeybindings state config = do
@@ -96,7 +102,7 @@ customKeybindings state config = do
                 -- the key Events just show up here as ints so you can also match against a raw int
                 wlr_log WLR_INFO "Mod + c pressed closing server"
                 -- for this event we call a Wayland FFI function
-                FFI.c_wl_display_terminate $ display state
+                terminate state
                 pure ()
             when
                 ( sym == keySymToInt KEY_d || sym == keySymToInt KEY_v || sym == keySymToInt KEY_l
@@ -104,7 +110,7 @@ customKeybindings state config = do
                 $ do
                     -- You can also use logical OR
                     wlr_log WLR_INFO "Mod + d pressed, cycling windows"
-                    result <- FFI.c_cycle_windows $ server state
+                    result <- cycleWindows state
                     ( if result
                             then wlr_log WLR_INFO "window cycled"
                             else wlr_log WLR_INFO "Window cycling failed, Only one window"
