@@ -22,6 +22,7 @@ import WLR.Util.Log
 data Config = Config
     { logLevel :: WLR_log_importance
     , startupApplication :: String
+    , onStartup :: IO ()
     , modKey :: Modifier
     , terminalEmulator :: String
     }
@@ -30,17 +31,6 @@ data State = State
     { display :: Ptr WlDisplay
     , server :: Ptr TinyWLServer
     }
-
--- Process to run on startup with the program name and an array of arguments to pass to it
-startingApps :: IO ()
-startingApps = do
-    startUpProcess
-        [ -- [ ("kitty", [])
-          -- ,
-          ("yambar", [])
-        , -- , ("wbg", ["~/.wallpapers/haskell.png"])
-          ("swaybg", ["-i", "./images/haskell.png", "-m", "fill"])
-        ]
 
 cycleWindows :: State -> IO Bool
 cycleWindows state = FFI.c_cycle_windows $ server state
@@ -147,7 +137,7 @@ runWLHS config = do
                             handlerPtr <- customKeybindings (State { display = wlDisplay, server = myServer} ) config
                             wlr_log WLR_DEBUG $ "Handler created: " ++ show handlerPtr
                             FFI.c_set_keybinding_handler myServer handlerPtr
-                            startingApps
+                            onStartup config
                             wlr_log WLR_INFO "TinyWLHS started"
                             FFI.c_server_run myServer
                         else wlr_log WLR_ERROR "Failed to start server"
