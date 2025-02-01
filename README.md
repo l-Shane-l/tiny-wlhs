@@ -25,9 +25,53 @@ The app can be configured in Config.hs
 
 More features coming, the intention is to get feature parity with something like sway or xmonad
 
+## DEMO
+
+![Example usage](./documents/output.gif)
+
 ## System Architecture
 
 The system is organized in multiple layers, providing a clean separation between Haskell control logic and low-level Wayland functionality:
+
+```mermaid
+graph TB
+    subgraph "Haskell Layer"
+        A[Haskell Main]
+        B[TinyWL Server]
+        H[Keybinding Handler]
+    end
+    subgraph "Bindings Layer"
+        C[wlhs - Wayland Haskell Bindings]
+    end
+    subgraph "C Layer"
+        D[TinyWL C Server]
+        I[Key Event Handler]
+    end
+    subgraph "System Layer"
+        E[wlroots]
+        F[Wayland Protocol]
+        G[Linux Kernel / Display Server]
+    end
+    A -->|starts| B
+    B -->|uses| C
+    B -->|configures| H
+    H <-->|callback| I
+    B -->|FFI calls| D
+    C -->|binds to| E
+    D -->|uses| E
+    D -->|dispatches to| I
+    E -->|implements| F
+    F -->|interacts with| G
+
+    classDef haskell fill:#f9f,stroke:#333,stroke-width:2px;
+    classDef c fill:#9cf,stroke:#333,stroke-width:2px;
+    classDef system fill:#fcf,stroke:#333,stroke-width:2px;
+    class A,B,H haskell;
+    class C,D,I c;
+    class E,F,G system;
+```
+
+### Layer Description
 
 - **Haskell Layer**: High-level control and configuration
 - **Bindings Layer**: Wayland protocol bindings for Haskell
