@@ -1,48 +1,105 @@
-# Contributing to Tinywl-hs
+# Contributing to TinyWL-hs
 
-We welcome contributions to the tinywl-hs project! Here's how you can help:
+We welcome contributions to the TinyWL-hs project! This is a Wayland compositor written in Haskell, and we're actively working on expanding its features and capabilities.
 
-## PLEASE NOTE
+## Getting Started
 
-The following guide was copied and pasted from another project of mine, at this early stage its more aspirational than a requirement.
+1. Ensure you have the prerequisites installed:
 
-## Reporting Issues
+   - Nix package manager
+   - Git
+   - Basic understanding of Wayland, Haskell, and C
 
-- Use the GitHub issue tracker to report bugs
-- Describe the issue in detail, including steps to reproduce
+2. Fork and clone the repository with submodules:
+   ```bash
+   git clone --recurse-submodules https://github.com/[your-username]/tiny-wlhs.git
+   ```
 
-## Submitting Changes
+## Areas for Contribution
 
-1. Fork the repository
-2. Create a new branch for your feature or bug fix
-3. Make your changes, adhering to the coding standards below
-4. Write or update tests as necessary
-5. Update documentation to reflect your changes
-6. Commit your changes with a clear commit message
-7. Push your branch and submit a pull request
+Current priority areas for contribution include:
 
-## Coding Standards
+1. Copy/Paste Functionality
 
-- Follow the [Haskell Style Guide](https://github.com/tibbe/haskell-style-guide/blob/master/haskell-style.md)
+   - Implementing basic clipboard support
+   - Integration with wl-clipboard
+
+2. Multi-Monitor Support
+
+   - Handling multiple displays
+   - Window management across screens
+
+3. Performance Optimization
+
+   - FFI call profiling
+   - Performance bottleneck identification
+   - Optimization implementation
+
+4. Testing
+
+   - Setting up Haskell testing framework
+   - Setting up C testing framework
+   - Writing initial test cases
+
+5. Documentation
+   - Keeping documentation in sync with code changes
+   - Improving setup guides
+   - Adding configuration examples
+
+## Development Process
+
+1. Check existing issues and TODO.md for current tasks
+2. Comment on an issue you want to work on
+3. Fork the repository
+4. Create a feature branch
+5. Make your changes
+6. Submit a pull request
+
+## Code Guidelines
+
+### Haskell Code
+
+- Follow standard Haskell style conventions
 - Use meaningful variable names
-- Comment complex logic or non-obvious code
-- Ensure your code passes hlint suggestions
-- Write Haddock documentation for exported functions
+- Document exported functions with Haddock
+- Keep functions focused and modular
 
-## Testing
+### C Code
 
-- Write tests for new functionality
-- Ensure all tests pass before submitting a pull request
-- Aim for high test coverage, especially in core functionality
+- Follow existing C code style in the project
+- Use proper memory management
+- Document functions and complex logic
+- Avoid direct memory manipulation where possible
 
-## Documentation
+### FFI
 
-- Update README.md if you change functionality
-- Provide clear and concise documentation for new features
-- Update the TODO.md file if you complete a task or identify a new one
+- Prefer function calls over Peek/Poke
+- Implement proper getters/setters in C
+- Document FFI bindings clearly
 
-## Questions?
+## Pull Request Process
 
-If you have any questions about contributing, feel free to open an issue for discussion.
+1. Ensure your code builds without errors
+2. Update documentation if you're changing functionality
+3. Update CHANGELOG.md with your changes
+4. Submit a pull request with a clear description of changes
 
-Thank you for your interest in improving tiny-wlhs!
+## Communication
+
+- Use GitHub issues for bug reports and feature discussions
+- For questions or suggestions, contact: shane@peregrinum.dev
+- Check existing issues before creating new ones
+
+## Project Structure
+
+- `src/` - Haskell source code
+- `c/` - C source code
+- `Config.hs` - Main configuration
+- `Setup.hs` - Setup functionality
+- `Main.hs` - Application entry point
+
+## License
+
+By contributing, you agree that your contributions will be licensed under the project's license.
+
+Thank you for contributing to TinyWL-hs
