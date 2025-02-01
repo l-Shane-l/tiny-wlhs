@@ -15,7 +15,7 @@ The app can be configured in Config.hs
 - Window cycling
 - Support for application spawners like bemenu
 - Support for notification daemons like mako
-- support for simple bars like yambar (more complex bars like waybar is not support yet)
+- Support for simple bars like yambar (more complex bars like waybar is not support yet)
 - Can be run from an X11 session or a TTY
 - Spawn processes at startup, configure via Haskell
 - Window borders
@@ -112,80 +112,94 @@ Default key bindings:
 - `Mod + Left Click`: Move window
 - `Mod + Right Click`: Resize window
 - `Mod + Esc` or `Alt + C`: Close server
-- `Mod + s`: Open new terminal (configurable, default: kitty)
-- `Mod + d` or `Mod + v` or `Mod + F1`: Cycle between windows
+- `Mod + s`: Open terminal (default: kitty)
+- `Mod + d`, `Mod + v`, or `Mod + l`: Cycle between windows
+- `Mod + a`: Launch bemenu-run
 
 ### Configuration
 
-You can make all customizations in Config.hs
-
-In appConfig you can set:
-
-- Log Level
-- Application to run on start
-- The Mod Key
-- Terminal Emulator
+The compositor is configured through the `Config` type in `Config.hs`:
 
 ```haskell
-appConfig :: Config -- Customize your app here, to help I placed the options in the comments
-appConfig =
-    Config
+data Config = Config
+    { logLevel :: WLR_log_importance
+    , modKey :: Modifier
+    , onStartup :: IO ()
+    , onKeyPress :: State -> CUInt -> IO ()
+    , startupApplication :: String
+    }
+
+data State = State
+    { display :: Ptr WlDisplay
+    , server :: Ptr TinyWLServer
+    }
+```
+
+Configuration is done in `Main.hs`. Here's an example configuration:
+
+```haskell
+appConfig :: Config
+appConfig = Config
         { logLevel = WLR_DEBUG -- WLR_INFO | WLR_DEBUG | WLR_SILENT | WLR_ERROR
-        , startupApplication = "" -- can be any app that works with wayland, Leave blank for no startup app
+        , startupApplication = "" -- can be any app that works with wayland
+        , onStartup = handleStartup
+        , onKeyPress = handleKeyPress
         , modKey = ModAlt -- ModAlt | ModCtrl | ModLogo | ModShift
-        , terminalEmulator = "kitty" -- I use kitty as my emulator, alacritty is also a popular choice
         }
+    where
+        terminalEmulator = "kitty" -- Terminal emulator choice
 ```
 
-You can also set up your own Key even listeners to do any of the following:
+#### Startup Applications
 
-- spawn any process you like
-- interact and control the compositor by calling FFI and Haskell functions in the LibTinyWLHS library
-- change current key bindings to your preference
+Configure startup applications in the `handleStartup` function:
 
 ```haskell
-customKeybindings :: Ptr WlDisplay -> Ptr TinyWLServer -> IO (FunPtr (CUInt -> IO ()))
-customKeybindings display server = do
-    let handler :: CUInt -> IO ()
-        handler sym = do
-            -- Add your custom key event handler heres
-            wlr_log WLR_INFO $ "Handler called with sym: " ++ show sym -- This will long as an int and key pressed while the mod key is held down
-            when (sym == keySymToInt KEY_s) $ do
-                -- simple match to key events defined in LibTinyWL.KeyBinding.KeySyms
-                wlr_log WLR_INFO "Mod + s pressed, spawning a terminal emulator"
-                _ <- spawnProcess (terminalEmulator appConfig) [] -- for this key event a process is spawned in Haskell
-                pure ()
-            when (sym == keySymToInt KEY_c) $ do
-                -- the key Events just show up here as ints so you can also match against a raw int
-                wlr_log WLR_INFO "Mod + c pressed closing server"
-                FFI.c_wl_display_terminate display -- for this event we call a Wayland FFI function
-                pure ()
-            when (sym == keySymToInt KEY_d || sym == keySymToInt KEY_v) $ do
-                -- You can also use logical OR
-                wlr_log WLR_INFO "Mod + d pressed, cycling windows"
-                result <- FFI.c_cycle_windows server
-                (if result then wlr_log WLR_INFO "window cycled" else wlr_log WLR_INFO "Window cycling failed, Only one window")
-
-                pure ()
-    mkKeybindingHandler handler
+handleStartup = do
+    startUpProcess [ ("yambar", [])
+                  , ("swaybg", ["-i", "./images/haskell.png", "-m", "fill"])
+                  ]
 ```
 
-You can also set up process or apps to start on launch of the compositor
+#### Key Bindings
+
+Key bindings are configured in the `handleKeyPress` function. Example:
 
 ```haskell
--- Process to run on startup with the program name and an array of arguments to pass to it
-startingApps :: IO ()
-startingApps = do
-    startUpProcess
-        [ -- [ ("kitty", [])
-          -- ,
-          ("yambar", [])
-        , -- , ("wbg", ["~/.wallpapers/haskell.png"])
-          ("swaybg", ["-i", "./images/haskell.png", "-m", "fill"])
-        ]
-```
+handleKeyPress state sym = do
+    wlr_log WLR_INFO $ "Handler called with sym: " ++ show sym
 
-Here you can see I have yambar(status panel), swaybg(background image) set to start on launch
+    -- Spawn terminal with Mod + s
+    when (sym == keySymToInt KEY_s) $ do
+        wlr_log WLR_INFO "Mod + s pressed, spawning a terminal emulator"
+        _ <- spawnProcess terminalEmulator []
+        pure ()
+
+    -- Launch bemenu with Mod + a
+    when (sym == keySymToInt KEY_a) $ do
+        wlr_log WLR_INFO "Mod + a pressed, running beMenu"
+        _ <- spawnProcess "bemenu-run"
+            [ "-i", "-l", "10", "-p", "run:"
+            , "--tb", "#285577", "--tf", "#ffffff"
+            , "--fb", "#222222", "--ff", "#ffffff"
+            , "--nb", "#222222", "--nf", "#888888"
+            , "--hb", "#285577", "--hf", "#ffffff"
+            , "--fn", "monospace 12"
+            , "-W", terminalEmulator ++ " -e"
+            ]
+        pure ()
+
+    -- Cycle windows with Mod + d, v, or l
+    when (sym == keySymToInt KEY_d ||
+          sym == keySymToInt KEY_v ||
+          sym == keySymToInt KEY_l) $ do
+        wlr_log WLR_INFO "Mod + d pressed, cycling windows"
+        result <- cycleWindows state
+        if result
+            then wlr_log WLR_INFO "window cycled"
+            else wlr_log WLR_INFO "Window cycling failed, Only one window"
+        pure ()
+```
 
 ## Development Status
 

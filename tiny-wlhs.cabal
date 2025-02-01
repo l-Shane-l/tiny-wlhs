@@ -1,6 +1,6 @@
 cabal-version:      3.0
 name:               tiny-wlhs
-version:            0.1.1.1
+version:            0.1.1.2
 synopsis:           An attempt to create a haskell implementation of tinywl to test wlrroots bindings
 homepage:           TBD
 license:            BSD-3-Clause
