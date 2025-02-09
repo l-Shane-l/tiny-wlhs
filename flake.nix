@@ -13,27 +13,28 @@
       let
         pkgs = nixpkgs.legacyPackages.${system};
 
-        # Haskell package set with our dependencies
         haskellPackages = pkgs.haskellPackages.override {
-          overrides = self: super: {
-            # Add your package overrides here if needed
+          overrides = hself: hsuper: {
+            wlhs-bindings = hself.callCabal2nix "wlhs-bindings" ./wlhs { };
+            tiny-wlhs = hself.callCabal2nix "tiny-wlhs" ./. {
+              inherit (pkgs) libxkbcommon;
+            };
           };
         };
       in
       {
+        packages.default = haskellPackages.tiny-wlhs;
+
         githubActions = nix-github-actions.lib.mkGithubMatrix {
           checks = {
-            "x86_64-linux" = {
-              tiny-wlhs = self.packages.x86_64-linux.default;
+            x86_64-linux = {
+              tiny-wlhs = self.packages.${system}.default;
             };
           };
         };
 
-        packages.default = haskellPackages.callCabal2nix "tiny-wlhs" ./. { };
-
         devShells.default = pkgs.mkShell {
           buildInputs = with pkgs; [
-            # Wayland dependencies
             wayland
             wayland-protocols
             wayland-scanner
