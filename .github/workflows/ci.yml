@@ -1,0 +1,27 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: nixos/nix:latest
+      options: --privileged
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Build and Test
+        run: |
+          # Show environment
+          nix --version
+
+          # Build project
+          nix-shell shell.nix --run "make -C tinywl -f Makefile.shared"
+          nix-shell shell.nix --run "cabal update && cabal build"
