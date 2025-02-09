@@ -1,0 +1,33 @@
+name: "Release"
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - uses: cachix/install-nix-action@v25
+      - name: Build
+        run: |
+          nix develop --command bash -c "make -C tinywl -f Makefile.shared && cabal build"
+      - name: Create Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Get binary path - adjust this based on your cabal output location
+          BINARY_PATH=$(find dist-newstyle -type f -name "tiny-wlhs" -executable)
+
+          # Create release notes from git tag message
+          TAG_NAME=${GITHUB_REF#refs/tags/}
+          RELEASE_NOTES=$(git tag -l --format='%(contents)' $TAG_NAME)
+
+          # Create the release
+          gh release create $TAG_NAME \
+            --title "Release $TAG_NAME" \
+            --notes "$RELEASE_NOTES" \
+            "$BINARY_PATH#tiny-wlhs"
