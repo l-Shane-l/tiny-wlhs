@@ -6,13 +6,11 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    container:
-      image: nixos/nix:latest
-      options: --privileged
     steps:
       - uses: actions/checkout@v4
         with:
           submodules: recursive
+      - uses: cachix/install-nix-action@v25
       - name: Build
         run: |
-          nix-shell shell.nix --run "make -C tinywl -f Makefile.shared && cabal build"
+          nix develop --command bash -c "make -C tinywl -f Makefile.shared && cabal build"
