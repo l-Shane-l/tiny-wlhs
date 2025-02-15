@@ -1,0 +1,16 @@
+name: "CI"
+on:
+  pull_request:
+  push:
+    branches: [main]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - uses: cachix/install-nix-action@v25
+      - name: Build
+        run: |
+          nix develop --command bash -c "make -C tinywl -f Makefile.shared && cabal build"

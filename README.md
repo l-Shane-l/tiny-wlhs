@@ -4,7 +4,11 @@ A Wayland compositor written in Haskell, providing a configurable and programmab
 
 The app can be configured in Config.hs
 
-## PLEASE NOTE this project is still under development and is not yet ready for use as a daily driver.
+## Status
+
+[![CI](https://github.com/l-Shane-l/tiny-wlhs/actions/workflows/ci.yml/badge.svg)](https://github.com/l-Shane-l/tiny-wlhs/actions/workflows/ci.yml)
+
+### PLEASE NOTE this project is still under development and is not yet ready for use as a daily driver.
 
 ## Features
 

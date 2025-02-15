@@ -34,6 +34,9 @@ pkgs.mkShell {
     bear
     gdb
     haskell-language-server
+    act
+    haskellPackages.fourmolu
+    clang-tools
 
     #Example Wayland Clients
     yambar
