@@ -6,13 +6,14 @@ LIBS=\
 	 $(shell pkg-config --cflags --libs xkbcommon)
 
 # Add -fPIC for position-independent code
-CFLAGS += -fPIC -g -ggdb -O1
+CFLAGS += -fPIC -g -ggdb -O1 -I. -Iinclude
 
 # Output file is now a shared library
 OUTPUT = libtinywl.so
 
+SRCS = tinywl.c src/toplevel.c src/surface.c src/output.c
 
-DEPS = tinywl.h xdg-shell-protocol.h wlr-layer-shell-unstable-v1-protocol.h
+DEPS = tinywl.h xdg-shell-protocol.h wlr-layer-shell-unstable-v1-protocol.h include/toplevel.h include/surface.h include/server.h include/cursor.h include/input.h include/output.h include/layer.h
 
 # wayland-scanner is a tool which generates C headers and rigging for Wayland
 # protocols, which are specified in XML. wlroots requires you to rig these up
@@ -25,11 +26,11 @@ wlr-layer-shell-unstable-v1-protocol.h:
 	$(WAYLAND_SCANNER) server-header \
         $(WLR_PROTOCOLS)/unstable/wlr-layer-shell-unstable-v1.xml $@
 
-$(OUTPUT): tinywl.c $(DEPS)
+$(OUTPUT): $(SRCS) $(DEPS)
 	$(CC) $(CFLAGS) -shared \
 		-g -Werror -I. \
 		-DWLR_USE_UNSTABLE \
-		-o $@ $< \
+		-o $@ $(SRCS) \
 		$(LIBS)
 
 clean:

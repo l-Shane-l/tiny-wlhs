@@ -68,7 +68,7 @@ pkgs.mkShell {
     cd ..
     
     # Add the tinywl directory to LD_LIBRARY_PATH
-    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$PWD/tinywl
+    export LD_LIBRARY_PATH="$PWD/tinywl:$LD_LIBRARY_PATH"
     
     echo "Wayland development environment"
     echo "wayland-scanner version: $(wayland-scanner --version)"
