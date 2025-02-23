@@ -75,15 +75,6 @@ appConfig =
                 -- for this event we call a Wayland FFI function
                 terminate state
                 pure ()
-            when (sym == keySymToInt KEY_c) $ do
-                wlr_log WLR_INFO "Mod + c pressed copying"
-                _ <- spawnProcess "wl-copy" []
-                pure ()
-
-            when (sym == keySymToInt KEY_v) $ do
-                wlr_log WLR_INFO "Mod + v pressed, pasting"
-                _ <- spawnProcess "wl-paste" []
-                pure ()
 
             when
                 ( sym == keySymToInt KEY_d || sym == keySymToInt KEY_l
