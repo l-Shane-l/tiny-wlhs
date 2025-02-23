@@ -6,6 +6,7 @@
 #include "wayland-server-core.h"
 #include "wlr/util/box.h"
 #include <wlr/types/wlr_cursor.h>
+#include <wlr/types/wlr_data_device.h>
 #include <wlr/types/wlr_xcursor_manager.h>
 
 struct wlr_backend;
@@ -77,6 +78,7 @@ struct tinywl_server {
 
   struct wlr_primary_selection_v1_device_manager *primary_selection_manager;
   struct wl_listener request_set_primary_selection;
+  struct wlr_data_device_manager *data_device_manager;
 };
 
 #endif

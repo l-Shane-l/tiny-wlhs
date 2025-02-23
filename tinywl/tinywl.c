@@ -1077,6 +1077,14 @@ bool server_init(struct tinywl_server *server) {
   initialize_xdg_shell(server);
   initialize_layer_shell(server);
 
+  // Initialize clipboard support
+  server->data_device_manager =
+      wlr_data_device_manager_create(server->wl_display);
+  if (!server->data_device_manager) {
+    wlr_log(WLR_ERROR, "Unable to create data device manager");
+    return false;
+  }
+
   // Output and scene setup
   initialize_output_layout(server);
   initialize_scene(server);
