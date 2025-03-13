@@ -3,12 +3,14 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.05";
+    # Required by `shell.nix`.
+    flake-compat.url = "https://flakehub.com/f/edolstra/flake-compat/1.tar.gz";
     flake-utils.url = "github:numtide/flake-utils";
     nix-github-actions.url = "github:nix-community/nix-github-actions";
     nix-github-actions.inputs.nixpkgs.follows = "nixpkgs";
   };
 
-  outputs = { self, nixpkgs, flake-utils, nix-github-actions }:
+  outputs = { self, nixpkgs, flake-utils, nix-github-actions, ... }:
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
