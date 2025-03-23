@@ -26,6 +26,7 @@ cabal.project.local~
 # Nix
 result
 result-*
+/.direnv/
 
 # Directory for compiled C library
 tinywl/*.so
