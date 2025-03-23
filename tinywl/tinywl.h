@@ -12,6 +12,7 @@
 
 #include "include/cursor.h"
 #include "include/input.h"
+#include "include/keyboard.h"
 #include "include/layer.h"
 #include "include/output.h"
 #include "include/server.h"
@@ -39,7 +40,7 @@
 #include <wlr/types/wlr_cursor.h>
 #include <wlr/types/wlr_data_device.h>
 #include <wlr/types/wlr_input_device.h>
-#include <wlr/types/wlr_keyboard.h>
+
 #include <wlr/types/wlr_output.h>
 #include <wlr/types/wlr_output_layout.h>
 #include <wlr/types/wlr_pointer.h>
