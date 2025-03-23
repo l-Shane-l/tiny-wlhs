@@ -1,5 +1,6 @@
 #include "toplevel.h"
 #include "tinywl.h"
+#include <stdlib.h>
 
 void focus_toplevel(struct tinywl_toplevel *toplevel,
                     struct wlr_surface *surface) {
@@ -158,4 +159,91 @@ void xdg_toplevel_request_fullscreen(struct wl_listener *listener, void *data) {
   struct tinywl_toplevel *toplevel =
       wl_container_of(listener, toplevel, request_fullscreen);
   wlr_xdg_surface_schedule_configure(toplevel->xdg_toplevel->base);
+}
+
+void xdg_toplevel_map(struct wl_listener *listener, void *data) {
+  struct tinywl_toplevel *toplevel = wl_container_of(listener, toplevel, map);
+  struct wlr_output *output = wlr_output_layout_output_at(
+      toplevel->server->output_layout, toplevel->server->cursor->x,
+      toplevel->server->cursor->y);
+
+  struct wlr_box full_area = {0};
+  wlr_output_effective_resolution(output, &full_area.width, &full_area.height);
+  const int border_thickness = 5;
+
+  // Calculate initial usable area
+  int usable_width = full_area.width - (2 * border_thickness);
+  int usable_height = full_area.height - (2 * border_thickness);
+
+  // Account for layer surfaces (like yambar)
+  struct tinywl_layer_surface *layer_surface;
+  wl_list_for_each(layer_surface, &toplevel->server->layer_surfaces, link) {
+    struct wlr_layer_surface_v1 *wlr_layer_surface =
+        layer_surface->layer_surface;
+
+    if (wlr_layer_surface->output != output ||
+        !wlr_layer_surface->surface->mapped ||
+        wlr_layer_surface->current.exclusive_zone <= 0) {
+      continue;
+    }
+
+    uint32_t anchor = wlr_layer_surface->current.anchor;
+    int32_t exclusive_zone = wlr_layer_surface->current.exclusive_zone;
+
+    if (anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP) {
+      usable_height -= exclusive_zone;
+    } else if (anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM) {
+      usable_height -= exclusive_zone;
+    }
+  }
+
+  // Set the window size to use the full usable area
+  wlr_xdg_toplevel_set_size(toplevel->xdg_toplevel, usable_width,
+                            usable_height);
+
+  wl_list_insert(&toplevel->server->toplevels, &toplevel->link);
+  update_border_position(toplevel);
+  set_border_color(toplevel, false);
+
+  wlr_scene_node_set_enabled(&toplevel->border_top->node, true);
+  wlr_scene_node_set_enabled(&toplevel->border_bottom->node, true);
+  wlr_scene_node_set_enabled(&toplevel->border_left->node, true);
+  wlr_scene_node_set_enabled(&toplevel->border_right->node, true);
+
+  focus_toplevel(toplevel, toplevel->xdg_toplevel->base->surface);
+}
+
+void xdg_toplevel_unmap(struct wl_listener *listener, void *data) {
+  /* Called when the surface is unmapped, and should no longer be shown. */
+  struct tinywl_toplevel *toplevel = wl_container_of(listener, toplevel, unmap);
+
+  /* Reset the cursor mode if the grabbed toplevel was unmapped. */
+  if (toplevel == toplevel->server->grabbed_toplevel) {
+    reset_cursor_mode(toplevel->server);
+  }
+
+  wl_list_remove(&toplevel->link);
+}
+
+void xdg_toplevel_destroy(struct wl_listener *listener, void *data) {
+  /* Called when the xdg_toplevel is destroyed. */
+  struct tinywl_toplevel *toplevel =
+      wl_container_of(listener, toplevel, destroy);
+
+  wl_list_remove(&toplevel->map.link);
+  wl_list_remove(&toplevel->unmap.link);
+  wl_list_remove(&toplevel->destroy.link);
+  wl_list_remove(&toplevel->request_move.link);
+  wl_list_remove(&toplevel->request_resize.link);
+  wl_list_remove(&toplevel->request_maximize.link);
+  wl_list_remove(&toplevel->request_fullscreen.link);
+  wl_list_remove(&toplevel->commit.link); // Add this line
+
+  free(toplevel);
+}
+
+void handle_toplevel_commit(struct wl_listener *listener, void *data) {
+  struct tinywl_toplevel *toplevel =
+      wl_container_of(listener, toplevel, commit);
+  update_border_position(toplevel);
 }

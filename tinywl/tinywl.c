@@ -164,25 +164,6 @@ static void seat_request_set_selection(struct wl_listener *listener,
   wlr_seat_set_selection(server->seat, event->source, event->serial);
 }
 
-static struct wlr_surface *layer_surface_at(struct tinywl_server *server,
-                                            double lx, double ly, double *sx,
-                                            double *sy) {
-  struct wlr_scene_node *node =
-      wlr_scene_node_at(&server->scene->tree.node, lx, ly, sx, sy);
-  if (!node || node->type != WLR_SCENE_NODE_BUFFER) {
-    return NULL;
-  }
-
-  struct wlr_scene_buffer *scene_buffer = wlr_scene_buffer_from_node(node);
-  struct wlr_scene_surface *scene_surface =
-      wlr_scene_surface_try_from_buffer(scene_buffer);
-  if (!scene_surface) {
-    return NULL;
-  }
-
-  return scene_surface->surface;
-}
-
 static struct tinywl_toplevel *desktop_toplevel_at(struct tinywl_server *server,
                                                    double lx, double ly,
                                                    struct wlr_surface **surface,
@@ -212,7 +193,7 @@ static struct tinywl_toplevel *desktop_toplevel_at(struct tinywl_server *server,
   return tree->node.data;
 }
 
-static void reset_cursor_mode(struct tinywl_server *server) {
+void reset_cursor_mode(struct tinywl_server *server) {
   /* Reset the cursor mode to passthrough. */
   server->cursor_mode = TINYWL_CURSOR_PASSTHROUGH;
   server->grabbed_toplevel = NULL;
@@ -530,94 +511,6 @@ static void server_new_output(struct wl_listener *listener, void *data) {
                                      scene_output);
 }
 
-static void xdg_toplevel_map(struct wl_listener *listener, void *data) {
-  struct tinywl_toplevel *toplevel = wl_container_of(listener, toplevel, map);
-  struct wlr_output *output = wlr_output_layout_output_at(
-      toplevel->server->output_layout, toplevel->server->cursor->x,
-      toplevel->server->cursor->y);
-
-  struct wlr_box full_area = {0};
-  wlr_output_effective_resolution(output, &full_area.width, &full_area.height);
-  const int border_thickness = 5;
-
-  // Calculate initial usable area
-  int usable_width = full_area.width - (2 * border_thickness);
-  int usable_height = full_area.height - (2 * border_thickness);
-
-  // Account for layer surfaces (like yambar)
-  struct tinywl_layer_surface *layer_surface;
-  wl_list_for_each(layer_surface, &toplevel->server->layer_surfaces, link) {
-    struct wlr_layer_surface_v1 *wlr_layer_surface =
-        layer_surface->layer_surface;
-
-    if (wlr_layer_surface->output != output ||
-        !wlr_layer_surface->surface->mapped ||
-        wlr_layer_surface->current.exclusive_zone <= 0) {
-      continue;
-    }
-
-    uint32_t anchor = wlr_layer_surface->current.anchor;
-    int32_t exclusive_zone = wlr_layer_surface->current.exclusive_zone;
-
-    if (anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP) {
-      usable_height -= exclusive_zone;
-    } else if (anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM) {
-      usable_height -= exclusive_zone;
-    }
-  }
-
-  // Set the window size to use the full usable area
-  wlr_xdg_toplevel_set_size(toplevel->xdg_toplevel, usable_width,
-                            usable_height);
-
-  wl_list_insert(&toplevel->server->toplevels, &toplevel->link);
-  update_border_position(toplevel);
-  set_border_color(toplevel, false);
-
-  wlr_scene_node_set_enabled(&toplevel->border_top->node, true);
-  wlr_scene_node_set_enabled(&toplevel->border_bottom->node, true);
-  wlr_scene_node_set_enabled(&toplevel->border_left->node, true);
-  wlr_scene_node_set_enabled(&toplevel->border_right->node, true);
-
-  focus_toplevel(toplevel, toplevel->xdg_toplevel->base->surface);
-}
-
-// Add this new function
-static void handle_toplevel_commit(struct wl_listener *listener, void *data) {
-  struct tinywl_toplevel *toplevel =
-      wl_container_of(listener, toplevel, commit);
-  update_border_position(toplevel);
-}
-
-static void xdg_toplevel_unmap(struct wl_listener *listener, void *data) {
-  /* Called when the surface is unmapped, and should no longer be shown. */
-  struct tinywl_toplevel *toplevel = wl_container_of(listener, toplevel, unmap);
-
-  /* Reset the cursor mode if the grabbed toplevel was unmapped. */
-  if (toplevel == toplevel->server->grabbed_toplevel) {
-    reset_cursor_mode(toplevel->server);
-  }
-
-  wl_list_remove(&toplevel->link);
-}
-
-static void xdg_toplevel_destroy(struct wl_listener *listener, void *data) {
-  /* Called when the xdg_toplevel is destroyed. */
-  struct tinywl_toplevel *toplevel =
-      wl_container_of(listener, toplevel, destroy);
-
-  wl_list_remove(&toplevel->map.link);
-  wl_list_remove(&toplevel->unmap.link);
-  wl_list_remove(&toplevel->destroy.link);
-  wl_list_remove(&toplevel->request_move.link);
-  wl_list_remove(&toplevel->request_resize.link);
-  wl_list_remove(&toplevel->request_maximize.link);
-  wl_list_remove(&toplevel->request_fullscreen.link);
-  wl_list_remove(&toplevel->commit.link); // Add this line
-
-  free(toplevel);
-}
-
 void begin_interactive(struct tinywl_toplevel *toplevel,
                        enum tinywl_cursor_mode mode, uint32_t edges) {
   /* This function sets up an interactive move or resize operation, where the
@@ -656,90 +549,6 @@ void begin_interactive(struct tinywl_toplevel *toplevel,
   }
 }
 
-static void server_new_xdg_surface(struct wl_listener *listener, void *data) {
-  struct tinywl_server *server =
-      wl_container_of(listener, server, new_xdg_surface);
-  struct wlr_xdg_surface *xdg_surface = data;
-
-  wlr_log(WLR_DEBUG, "Creating new XDG surface");
-
-  if (xdg_surface->role == WLR_XDG_SURFACE_ROLE_POPUP) {
-    struct wlr_xdg_surface *parent =
-        wlr_xdg_surface_try_from_wlr_surface(xdg_surface->popup->parent);
-    assert(parent != NULL);
-    struct wlr_scene_tree *parent_tree = parent->data;
-    xdg_surface->data = wlr_scene_xdg_surface_create(parent_tree, xdg_surface);
-    wlr_log(WLR_DEBUG, "Created popup surface");
-    return;
-  }
-
-  assert(xdg_surface->role == WLR_XDG_SURFACE_ROLE_TOPLEVEL);
-
-  struct tinywl_toplevel *toplevel = calloc(1, sizeof(*toplevel));
-  toplevel->server = server;
-  toplevel->xdg_toplevel = xdg_surface->toplevel;
-
-  // Create scene tree first
-  toplevel->scene_tree = wlr_scene_xdg_surface_create(
-      server->xdg_shell_tree, toplevel->xdg_toplevel->base);
-  if (!toplevel->scene_tree) {
-    wlr_log(WLR_ERROR, "Failed to create scene tree for toplevel");
-    free(toplevel);
-    return;
-  }
-
-  // Create border tree as child of scene tree
-  toplevel->border_tree = wlr_scene_tree_create(toplevel->scene_tree);
-  if (!toplevel->border_tree) {
-    wlr_log(WLR_ERROR, "Failed to create border tree");
-    free(toplevel);
-    return;
-  }
-
-  // Create border rectangles in border tree
-  const float white[4] = {1.0f, 1.0f, 1.0f, 1.0f};
-  toplevel->border_top =
-      wlr_scene_rect_create(toplevel->border_tree, 0, 0, white);
-  toplevel->border_bottom =
-      wlr_scene_rect_create(toplevel->border_tree, 0, 0, white);
-  toplevel->border_left =
-      wlr_scene_rect_create(toplevel->border_tree, 0, 0, white);
-  toplevel->border_right =
-      wlr_scene_rect_create(toplevel->border_tree, 0, 0, white);
-
-  // Setup event listeners
-  toplevel->map.notify = xdg_toplevel_map;
-  wl_signal_add(&xdg_surface->surface->events.map, &toplevel->map);
-
-  toplevel->unmap.notify = xdg_toplevel_unmap;
-  wl_signal_add(&xdg_surface->surface->events.unmap, &toplevel->unmap);
-
-  toplevel->destroy.notify = xdg_toplevel_destroy;
-  wl_signal_add(&xdg_surface->events.destroy, &toplevel->destroy);
-
-  // Add commit listener
-  toplevel->commit.notify = handle_toplevel_commit;
-  wl_signal_add(&xdg_surface->surface->events.commit, &toplevel->commit);
-
-  struct wlr_xdg_toplevel *xdg_toplevel = xdg_surface->toplevel;
-  toplevel->request_move.notify = xdg_toplevel_request_move;
-  wl_signal_add(&xdg_toplevel->events.request_move, &toplevel->request_move);
-  toplevel->request_resize.notify = xdg_toplevel_request_resize;
-  wl_signal_add(&xdg_toplevel->events.request_resize,
-                &toplevel->request_resize);
-  toplevel->request_maximize.notify = xdg_toplevel_request_maximize;
-  wl_signal_add(&xdg_toplevel->events.request_maximize,
-                &toplevel->request_maximize);
-  toplevel->request_fullscreen.notify = xdg_toplevel_request_fullscreen;
-  wl_signal_add(&xdg_toplevel->events.request_fullscreen,
-                &toplevel->request_fullscreen);
-
-  toplevel->scene_tree->node.data = toplevel;
-  xdg_surface->data = toplevel->scene_tree;
-
-  update_border_position(toplevel);
-}
-
 // Function declarations
 char *parse_arguments(int argc, char *argv[]);
 void initialize_output_layout(struct tinywl_server *server);
@@ -766,108 +575,6 @@ struct tinywl_server *server_create() {
 void server_destroy(struct tinywl_server *server) {
   cleanup(server);
   free(server);
-}
-
-static void server_new_layer_surface(struct wl_listener *listener, void *data) {
-  struct tinywl_server *server =
-      wl_container_of(listener, server, new_layer_surface);
-  struct wlr_layer_surface_v1 *layer_surface = data;
-
-  if (!layer_surface->output && !wl_list_empty(&server->outputs)) {
-    struct tinywl_output *first_output =
-        wl_container_of(server->outputs.next, first_output, link);
-    layer_surface->output = first_output->wlr_output;
-  }
-
-  wlr_log(WLR_DEBUG, "New layer surface: namespace %s layer %d",
-          layer_surface->namespace, layer_surface->pending.layer);
-
-  // Pick the appropriate scene tree
-  struct wlr_scene_tree *parent;
-  switch (layer_surface->pending.layer) {
-  case ZWLR_LAYER_SHELL_V1_LAYER_BACKGROUND:
-    parent = server->layer_tree_background;
-    break;
-  case ZWLR_LAYER_SHELL_V1_LAYER_BOTTOM:
-    parent = server->layer_tree_bottom;
-    break;
-  case ZWLR_LAYER_SHELL_V1_LAYER_TOP:
-    parent = server->layer_tree_top;
-    break;
-  case ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY:
-    parent = server->layer_tree_overlay;
-    break;
-  default:
-    wlr_log(WLR_ERROR, "Invalid layer surface layer %d",
-            layer_surface->pending.layer);
-    return;
-  }
-
-  struct tinywl_layer_surface *surface = calloc(1, sizeof(*surface));
-  surface->server = server;
-  surface->layer_surface = layer_surface;
-
-  // Create scene layer surface
-  surface->scene_tree =
-      wlr_scene_layer_surface_v1_create(parent, layer_surface);
-  if (!surface->scene_tree) {
-    free(surface);
-    return;
-  }
-
-  layer_surface->data = surface->scene_tree;
-
-  surface->destroy.notify = layer_surface_destroy;
-  wl_signal_add(&layer_surface->events.destroy, &surface->destroy);
-
-  surface->map.notify = layer_surface_map;
-  wl_signal_add(&layer_surface->surface->events.map, &surface->map);
-
-  surface->unmap.notify = layer_surface_unmap;
-  wl_signal_add(&layer_surface->surface->events.unmap, &surface->unmap);
-
-  surface->configure.notify = layer_surface_configure;
-  wl_signal_add(&layer_surface->surface->events.commit,
-                &surface->configure); // NOT surface->events.configure// The
-                                      // event is directly on the layer surface/
-                                      // Changed from surface->events.commit
-
-  wl_list_insert(&server->layer_surfaces, &surface->link);
-}
-
-static void
-apply_layer_surface_anchoring(struct tinywl_layer_surface *surface) {
-  struct wlr_layer_surface_v1 *wlr_layer_surface = surface->layer_surface;
-  struct wlr_output *output = wlr_layer_surface->output;
-
-  if (!output) {
-    return;
-  }
-
-  int x = 0, y = 0;
-  int width = wlr_layer_surface->current.desired_width;
-  int height = wlr_layer_surface->current.desired_height;
-  uint32_t anchor = wlr_layer_surface->current.anchor;
-
-  if ((anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT) &&
-      (anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_RIGHT)) {
-    x = (output->width - width) / 2;
-  } else if (anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_RIGHT) {
-    x = output->width - width;
-  }
-
-  if ((anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP) &&
-      (anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM)) {
-    y = (output->height - height) / 2;
-  } else if (anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM) {
-    y = output->height - height;
-  }
-
-  x += wlr_layer_surface->current.margin.left;
-  y += wlr_layer_surface->current.margin.top;
-
-  struct wlr_scene_tree *scene_tree = surface->scene_tree->tree;
-  wlr_scene_node_set_position(&scene_tree->node, x, y);
 }
 
 static void initialize_layer_trees(struct tinywl_server *server) {
