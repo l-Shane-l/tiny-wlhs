@@ -5,13 +5,13 @@
 #define WLR_USE_UNSTABLE
 #endif
 
-#include "wlr-layer-shell-unstable-v1-protocol.h"
 #include <stdbool.h>
 #include <stdint.h>
 #include <wayland-server-core.h>
 
 #include "include/cursor.h"
 #include "include/input.h"
+#include "include/keyboard.h"
 #include "include/layer.h"
 #include "include/output.h"
 #include "include/server.h"
@@ -39,7 +39,7 @@
 #include <wlr/types/wlr_cursor.h>
 #include <wlr/types/wlr_data_device.h>
 #include <wlr/types/wlr_input_device.h>
-#include <wlr/types/wlr_keyboard.h>
+
 #include <wlr/types/wlr_output.h>
 #include <wlr/types/wlr_output_layout.h>
 #include <wlr/types/wlr_pointer.h>
@@ -71,6 +71,8 @@ struct tinywl_server *server_create(void);
 void server_destroy(struct tinywl_server *server);
 bool server_init(struct tinywl_server *server);
 const char *server_start(struct tinywl_server *server);
+
+void reset_cursor_mode(struct tinywl_server *server);
 
 void server_run(struct tinywl_server *server);
 void server_set_startup_command(const char *cmd);

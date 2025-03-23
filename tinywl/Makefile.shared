@@ -11,9 +11,9 @@ CFLAGS += -fPIC -g -ggdb -O1 -I. -Iinclude
 # Output file is now a shared library
 OUTPUT = libtinywl.so
 
-SRCS = tinywl.c src/toplevel.c src/surface.c src/output.c
+SRCS = tinywl.c src/toplevel.c src/surface.c src/output.c src/keyboard.c
 
-DEPS = tinywl.h xdg-shell-protocol.h wlr-layer-shell-unstable-v1-protocol.h include/toplevel.h include/surface.h include/server.h include/cursor.h include/input.h include/output.h include/layer.h
+DEPS = tinywl.h xdg-shell-protocol.h wlr-layer-shell-unstable-v1-protocol.h include/toplevel.h include/surface.h include/server.h include/cursor.h include/input.h include/output.h include/layer.h include/keyboard.h
 
 # wayland-scanner is a tool which generates C headers and rigging for Wayland
 # protocols, which are specified in XML. wlroots requires you to rig these up
