@@ -57,57 +57,6 @@ static void server_new_pointer(struct tinywl_server *server,
   wlr_cursor_attach_input_device(server->cursor, device);
 }
 
-static void xdg_toplevel_decoration_handle_destroy(struct wl_listener *listener,
-                                                   void *data) {
-  struct tinywl_toplevel_decoration *decoration =
-      wl_container_of(listener, decoration, destroy);
-  wl_list_remove(&decoration->destroy.link);
-  wl_list_remove(&decoration->request_mode.link);
-  wl_list_remove(&decoration->link);
-  free(decoration);
-}
-
-static void
-xdg_toplevel_decoration_handle_request_mode(struct wl_listener *listener,
-                                            void *data) {
-  struct tinywl_toplevel_decoration *decoration =
-      wl_container_of(listener, decoration, request_mode);
-  struct wlr_xdg_toplevel_decoration_v1 *wlr_decoration = data;
-
-  // Here we always prefer server-side decorations
-  wlr_xdg_toplevel_decoration_v1_set_mode(
-      wlr_decoration, WLR_XDG_TOPLEVEL_DECORATION_V1_MODE_SERVER_SIDE);
-}
-
-static void server_handle_new_xdg_decoration(struct wl_listener *listener,
-                                             void *data) {
-  struct tinywl_server *server =
-      wl_container_of(listener, server, new_xdg_decoration);
-  struct wlr_xdg_toplevel_decoration_v1 *wlr_decoration = data;
-
-  struct tinywl_toplevel_decoration *decoration =
-      calloc(1, sizeof(struct tinywl_toplevel_decoration));
-  if (!decoration) {
-    return;
-  }
-
-  decoration->wlr_decoration = wlr_decoration;
-  decoration->server = server;
-
-  decoration->destroy.notify = xdg_toplevel_decoration_handle_destroy;
-  wl_signal_add(&wlr_decoration->events.destroy, &decoration->destroy);
-
-  decoration->request_mode.notify = xdg_toplevel_decoration_handle_request_mode;
-  wl_signal_add(&wlr_decoration->events.request_mode,
-                &decoration->request_mode);
-
-  wl_list_insert(&server->decorations, &decoration->link);
-
-  /* Immediately decide on the decoration mode */
-  wlr_xdg_toplevel_decoration_v1_set_mode(
-      wlr_decoration, WLR_XDG_TOPLEVEL_DECORATION_V1_MODE_SERVER_SIDE);
-}
-
 static void server_new_input(struct wl_listener *listener, void *data) {
   /* This event is raised by the backend when a new input device becomes
    * available. */
@@ -162,35 +111,6 @@ static void seat_request_set_selection(struct wl_listener *listener,
       wl_container_of(listener, server, request_set_selection);
   struct wlr_seat_request_set_selection_event *event = data;
   wlr_seat_set_selection(server->seat, event->source, event->serial);
-}
-
-static struct tinywl_toplevel *desktop_toplevel_at(struct tinywl_server *server,
-                                                   double lx, double ly,
-                                                   struct wlr_surface **surface,
-                                                   double *sx, double *sy) {
-  /* This returns the topmost node in the scene at the given layout coords.
-   * We only care about surface nodes as we are specifically looking for a
-   * surface in the surface tree of a tinywl_toplevel. */
-  struct wlr_scene_node *node =
-      wlr_scene_node_at(&server->scene->tree.node, lx, ly, sx, sy);
-  if (node == NULL || node->type != WLR_SCENE_NODE_BUFFER) {
-    return NULL;
-  }
-  struct wlr_scene_buffer *scene_buffer = wlr_scene_buffer_from_node(node);
-  struct wlr_scene_surface *scene_surface =
-      wlr_scene_surface_try_from_buffer(scene_buffer);
-  if (!scene_surface) {
-    return NULL;
-  }
-
-  *surface = scene_surface->surface;
-  /* Find the node corresponding to the tinywl_toplevel at the root of this
-   * surface tree, it is the only one for which we set the data field. */
-  struct wlr_scene_tree *tree = node->parent;
-  while (tree != NULL && tree->node.data == NULL) {
-    tree = tree->node.parent;
-  }
-  return tree->node.data;
 }
 
 void reset_cursor_mode(struct tinywl_server *server) {
