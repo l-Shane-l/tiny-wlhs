@@ -163,48 +163,47 @@ void xdg_toplevel_request_fullscreen(struct wl_listener *listener, void *data) {
 
 void xdg_toplevel_map(struct wl_listener *listener, void *data) {
   struct tinywl_toplevel *toplevel = wl_container_of(listener, toplevel, map);
-  struct wlr_output *output = wlr_output_layout_output_at(
-      toplevel->server->output_layout, toplevel->server->cursor->x,
-      toplevel->server->cursor->y);
+  struct tinywl_server *server = toplevel->server;
 
-  struct wlr_box full_area = {0};
-  wlr_output_effective_resolution(output, &full_area.width, &full_area.height);
-  const int border_thickness = 5;
+  // Get the scene tree for the current workspace
+  struct wlr_scene_tree *workspace_tree =
+      server->workspaces[server->active_workspace].scene_tree;
 
-  // Calculate initial usable area
-  int usable_width = full_area.width - (2 * border_thickness);
-  int usable_height = full_area.height - (2 * border_thickness);
+  // Create the toplevel in the current workspace's scene tree instead
+  toplevel->scene_tree = wlr_scene_xdg_surface_create(
+      workspace_tree, toplevel->xdg_toplevel->base);
 
-  // Account for layer surfaces (like yambar)
-  struct tinywl_layer_surface *layer_surface;
-  wl_list_for_each(layer_surface, &toplevel->server->layer_surfaces, link) {
-    struct wlr_layer_surface_v1 *wlr_layer_surface =
-        layer_surface->layer_surface;
-
-    if (wlr_layer_surface->output != output ||
-        !wlr_layer_surface->surface->mapped ||
-        wlr_layer_surface->current.exclusive_zone <= 0) {
-      continue;
-    }
-
-    uint32_t anchor = wlr_layer_surface->current.anchor;
-    int32_t exclusive_zone = wlr_layer_surface->current.exclusive_zone;
-
-    if (anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP) {
-      usable_height -= exclusive_zone;
-    } else if (anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM) {
-      usable_height -= exclusive_zone;
-    }
+  if (!toplevel->scene_tree) {
+    wlr_log(WLR_ERROR, "Failed to create scene tree for toplevel");
+    return;
   }
 
-  // Set the window size to use the full usable area
-  wlr_xdg_toplevel_set_size(toplevel->xdg_toplevel, usable_width,
-                            usable_height);
+  // Add to current workspace's toplevel list
+  wl_list_insert(&server->workspaces[server->active_workspace].toplevels,
+                 &toplevel->link);
 
-  wl_list_insert(&toplevel->server->toplevels, &toplevel->link);
+  // Create border tree as child of scene tree
+  toplevel->border_tree = wlr_scene_tree_create(toplevel->scene_tree);
+  if (!toplevel->border_tree) {
+    wlr_log(WLR_ERROR, "Failed to create border tree");
+    return;
+  }
+
+  // Rest of border creation code
+  const float white[4] = {1.0f, 1.0f, 1.0f, 1.0f};
+  toplevel->border_top =
+      wlr_scene_rect_create(toplevel->border_tree, 0, 0, white);
+  toplevel->border_bottom =
+      wlr_scene_rect_create(toplevel->border_tree, 0, 0, white);
+  toplevel->border_left =
+      wlr_scene_rect_create(toplevel->border_tree, 0, 0, white);
+  toplevel->border_right =
+      wlr_scene_rect_create(toplevel->border_tree, 0, 0, white);
+
   update_border_position(toplevel);
   set_border_color(toplevel, false);
 
+  // Enable borders
   wlr_scene_node_set_enabled(&toplevel->border_top->node, true);
   wlr_scene_node_set_enabled(&toplevel->border_bottom->node, true);
   wlr_scene_node_set_enabled(&toplevel->border_left->node, true);

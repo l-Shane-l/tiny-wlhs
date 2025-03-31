@@ -52,6 +52,13 @@
 #include <wlr/util/log.h>
 #include <xkbcommon/xkbcommon.h>
 
+#define MAX_WORKSPACES 9
+
+struct tinywl_workspace {
+  struct wl_list toplevels;          // List of windows in this workspace
+  struct wlr_scene_tree *scene_tree; // Scene tree for this workspace
+};
+
 struct reserved_area {
   int x, y;
   int width, height;
@@ -69,7 +76,8 @@ struct tinywl_server *server_create(void);
 void server_destroy(struct tinywl_server *server);
 bool server_init(struct tinywl_server *server);
 const char *server_start(struct tinywl_server *server);
-
+void initialize_workspaces(struct tinywl_server *server);
+bool switch_workspace(struct tinywl_server *server, int index);
 void reset_cursor_mode(struct tinywl_server *server);
 void process_cursor_motion(struct tinywl_server *server, uint32_t time);
 void server_run(struct tinywl_server *server);

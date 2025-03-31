@@ -81,6 +81,8 @@ struct tinywl_server {
   struct wl_listener new_xdg_decoration;
 
   struct wlr_scene_tree *xdg_shell_tree;
+  struct tinywl_workspace *workspaces; // Array of workspaces
+  int active_workspace;
 
   struct wlr_primary_selection_v1_device_manager *primary_selection_manager;
   struct wl_listener request_set_primary_selection;

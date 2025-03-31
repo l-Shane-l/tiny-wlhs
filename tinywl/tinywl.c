@@ -59,13 +59,14 @@ static void output_frame(struct wl_listener *listener, void *data) {
     return;
   }
 
-  // wlr_log(WLR_DEBUG, "Rendering frame for output %s",
-  // output->wlr_output->name);
-
-  /* Render the scene */
+  // Render the scene
   struct timespec now;
   clock_gettime(CLOCK_MONOTONIC, &now);
 
+  // Clear the entire output before rendering
+  float clear_color[4] = {0.1, 0.1, 0.1, 1.0}; // Dark gray background
+
+  // This will ensure we get a clean render each frame
   if (!wlr_scene_output_commit(scene_output, NULL)) {
     wlr_log(WLR_ERROR, "Failed to commit scene output!");
     return;
@@ -302,6 +303,9 @@ bool server_init(struct tinywl_server *server) {
   initialize_cursor(server);
 
   initialize_layer_trees(server);
+
+  initialize_workspaces(server);
+
   wl_list_init(&server->decorations);
   server->xdg_decoration_manager =
       wlr_xdg_decoration_manager_v1_create(server->wl_display);
@@ -455,6 +459,99 @@ const char *start_backend(struct tinywl_server *server) {
   return socket;
 }
 
+void initialize_workspaces(struct tinywl_server *server) {
+  // Allocate workspace array
+  server->workspaces = calloc(MAX_WORKSPACES, sizeof(struct tinywl_workspace));
+  if (!server->workspaces) {
+    wlr_log(WLR_ERROR, "Failed to allocate workspaces");
+    return;
+  }
+
+  // Initialize each workspace
+  for (int i = 0; i < MAX_WORKSPACES; i++) {
+    wl_list_init(&server->workspaces[i].toplevels);
+
+    // Create scene tree under the xdg_shell_tree
+    server->workspaces[i].scene_tree =
+        wlr_scene_tree_create(server->xdg_shell_tree);
+    if (!server->workspaces[i].scene_tree) {
+      wlr_log(WLR_ERROR, "Failed to create scene tree for workspace %d", i + 1);
+      continue;
+    }
+
+    // Make sure it's a direct child of the xdg_shell_tree
+    wlr_scene_node_reparent(&server->workspaces[i].scene_tree->node,
+                            server->xdg_shell_tree);
+
+    // Hide all workspaces except the first one
+    if (i > 0) {
+      wlr_scene_node_set_enabled(&server->workspaces[i].scene_tree->node,
+                                 false);
+    }
+  }
+
+  // Start with the first workspace active
+  server->active_workspace = 0;
+
+  wlr_log(WLR_INFO, "Initialized %d workspaces", MAX_WORKSPACES);
+}
+
+bool switch_workspace(struct tinywl_server *server, int index) {
+  if (index < 0 || index >= MAX_WORKSPACES) {
+    wlr_log(WLR_ERROR, "Invalid workspace index: %d", index);
+    return false;
+  }
+
+  if (index == server->active_workspace) {
+    return true; // Already on this workspace
+  }
+
+  wlr_log(WLR_INFO, "Switching from workspace %d to %d",
+          server->active_workspace + 1, index + 1);
+
+  // Hide current workspace scene tree
+  wlr_scene_node_set_enabled(
+      &server->workspaces[server->active_workspace].scene_tree->node, false);
+
+  // Show new workspace scene tree
+  wlr_scene_node_set_enabled(&server->workspaces[index].scene_tree->node, true);
+
+  // Force re-rendering of all outputs to clear previous content
+  struct tinywl_output *output;
+  wl_list_for_each(output, &server->outputs, link) {
+    // Get the scene output for this output
+    struct wlr_scene_output *scene_output =
+        wlr_scene_get_scene_output(server->scene, output->wlr_output);
+
+    if (scene_output) {
+      // Request a frame to be rendered
+      wlr_output_schedule_frame(output->wlr_output);
+
+      // Force a full commit, which will clear and redraw everything
+      struct wlr_render_pass *pass = NULL;
+      wlr_scene_output_commit(scene_output, NULL);
+
+      // Mark all outputs as needing a repaint
+      wlr_output_schedule_frame(output->wlr_output);
+    }
+  }
+
+  // Update active workspace
+  server->active_workspace = index;
+
+  // Focus on the topmost window of the new workspace if there is one
+  if (!wl_list_empty(&server->workspaces[index].toplevels)) {
+    struct tinywl_toplevel *toplevel = wl_container_of(
+        server->workspaces[index].toplevels.next, toplevel, link);
+    focus_toplevel(toplevel, toplevel->xdg_toplevel->base->surface);
+  } else {
+    // If no window to focus, clear keyboard focus
+    wlr_seat_keyboard_notify_clear_focus(server->seat);
+  }
+
+  return true;
+}
+
 void run_startup_command(const char *startup_cmd) {
   if (startup_cmd) {
     if (fork() == 0) {
@@ -464,6 +561,12 @@ void run_startup_command(const char *startup_cmd) {
 }
 
 void cleanup(struct tinywl_server *server) {
+  // Free the workspaces
+  if (server->workspaces) {
+    free(server->workspaces);
+  }
+
+  // Rest of cleanup...
   wl_display_destroy_clients(server->wl_display);
   wlr_scene_node_destroy(&server->scene->tree.node);
   wlr_xcursor_manager_destroy(server->cursor_mgr);

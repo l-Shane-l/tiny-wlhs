@@ -59,22 +59,32 @@ bool handle_keybinding(struct tinywl_server *server, xkb_keysym_t sym) {
    * processing keys, rather than passing them on to the client for its own
    * processing.
    *
-   * This function assumes Alt is held down.
+   * This function assumes modifier key is held down.
    */
-
   switch (sym) {
   case XKB_KEY_Escape:
     wl_display_terminate(server->wl_display);
     break;
   case XKB_KEY_F1:
-    bool result = cycle_windows(server);
     /* Cycle to the next toplevel */
-    if (!result) {
-      wlr_log(WLR_INFO, "Window Cycle Failed, Not enought windows");
+    if (!cycle_windows(server)) {
+      wlr_log(WLR_INFO, "Window Cycle Failed, Not enough windows");
     }
     break;
+  // Workspace switching with number keys
+  case XKB_KEY_1:
+  case XKB_KEY_2:
+  case XKB_KEY_3:
+  case XKB_KEY_4:
+  case XKB_KEY_5:
+  case XKB_KEY_6:
+  case XKB_KEY_7:
+  case XKB_KEY_8:
+  case XKB_KEY_9: {
+    int workspace_index = sym - XKB_KEY_1; // Convert to 0-based index
+    return switch_workspace(server, workspace_index);
+  } break;
   default:
-
     if (server->keybinding_handler) {
       wlr_log(WLR_DEBUG, "Calling custom handler");
       server->keybinding_handler(sym);
