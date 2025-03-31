@@ -41,10 +41,24 @@ struct tinywl_toplevel {
 void focus_toplevel(struct tinywl_toplevel *toplevel,
                     struct wlr_surface *surface);
 
+struct tinywl_toplevel *desktop_toplevel_at(struct tinywl_server *server,
+                                            double lx, double ly,
+                                            struct wlr_surface **surface,
+                                            double *sx, double *sy);
+
+void xdg_toplevel_decoration_handle_destroy(struct wl_listener *listener,
+                                            void *data);
+void xdg_toplevel_decoration_handle_request_mode(struct wl_listener *listener,
+                                                 void *data);
+void server_handle_new_xdg_decoration(struct wl_listener *listener, void *data);
 void set_border_color(struct tinywl_toplevel *toplevel, bool focused);
 void update_border_position(struct tinywl_toplevel *toplevel);
 void xdg_toplevel_request_move(struct wl_listener *listener, void *data);
 void xdg_toplevel_request_resize(struct wl_listener *listener, void *data);
 void xdg_toplevel_request_maximize(struct wl_listener *listener, void *data);
 void xdg_toplevel_request_fullscreen(struct wl_listener *listener, void *data);
+void xdg_toplevel_map(struct wl_listener *listener, void *data);
+void xdg_toplevel_unmap(struct wl_listener *listener, void *data);
+void xdg_toplevel_destroy(struct wl_listener *listener, void *data);
+void handle_toplevel_commit(struct wl_listener *listener, void *data);
 #endif
