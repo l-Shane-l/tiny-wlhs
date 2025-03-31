@@ -9,15 +9,13 @@
 #include <stdint.h>
 #include <wayland-server-core.h>
 
-#include "include/cursor.h"
 #include "include/input.h"
 #include "include/keyboard.h"
-#include "include/layer.h"
 #include "include/output.h"
+#include "include/seat.h"
 #include "include/server.h"
 #include "include/toplevel.h"
 
-#include "include/surface.h"
 #include "include/toplevel.h"
 #include <wlr/types/wlr_layer_shell_v1.h>
 #include <wlr/types/wlr_output.h>
@@ -73,7 +71,7 @@ bool server_init(struct tinywl_server *server);
 const char *server_start(struct tinywl_server *server);
 
 void reset_cursor_mode(struct tinywl_server *server);
-
+void process_cursor_motion(struct tinywl_server *server, uint32_t time);
 void server_run(struct tinywl_server *server);
 void server_set_startup_command(const char *cmd);
 bool cycle_windows(struct tinywl_server *server);
@@ -86,5 +84,20 @@ bool initialize_backend_renderer_allocator(struct tinywl_server *server);
 void set_haskell_key_notification_function(void (*func)(xkb_keysym_t sym));
 void begin_interactive(struct tinywl_toplevel *toplevel,
                        enum tinywl_cursor_mode mode, uint32_t edges);
+char *parse_arguments(int argc, char *argv[]);
+void initialize_output_layout(struct tinywl_server *server);
+void initialize_scene(struct tinywl_server *server);
+void initialize_xdg_shell(struct tinywl_server *server);
+void initialize_cursor(struct tinywl_server *server);
+
+const char *start_backend(struct tinywl_server *server);
+void run_startup_command(const char *startup_cmd);
+void cleanup(struct tinywl_server *server);
+struct tinywl_server *server_create();
+void server_destroy(struct tinywl_server *server);
+bool server_init(struct tinywl_server *server);
+const char *server_start(struct tinywl_server *server);
+void server_run(struct tinywl_server *server);
+void server_set_startup_command(const char *cmd);
 
 #endif // TINYWL_H
