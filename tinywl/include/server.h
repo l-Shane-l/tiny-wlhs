@@ -1,13 +1,18 @@
 #ifndef SERVER_H
 #define SERVER_H
 
-#include "cursor.h"
 #include "input.h"
 #include "wayland-server-core.h"
 #include "wlr/util/box.h"
 #include <wlr/types/wlr_cursor.h>
 #include <wlr/types/wlr_data_device.h>
 #include <wlr/types/wlr_xcursor_manager.h>
+
+enum tinywl_cursor_mode {
+  TINYWL_CURSOR_PASSTHROUGH,
+  TINYWL_CURSOR_MOVE,
+  TINYWL_CURSOR_RESIZE,
+};
 
 struct wlr_backend;
 struct wlr_renderer;
@@ -18,6 +23,7 @@ struct wlr_scene_output_layout;
 struct wlr_xcursor_manager;
 struct wlr_seat;
 struct wlr_box;
+struct wlr_cursor;
 
 struct tinywl_server {
   struct wl_display *wl_display;
@@ -81,4 +87,15 @@ struct tinywl_server {
   struct wlr_data_device_manager *data_device_manager;
 };
 
+void server_new_pointer(struct tinywl_server *server,
+                        struct wlr_input_device *device);
+
+void server_new_input(struct wl_listener *listener, void *data);
+void process_cursor_move(struct tinywl_server *server, uint32_t time);
+void process_cursor_motion(struct tinywl_server *server, uint32_t time);
+void server_cursor_motion(struct wl_listener *listener, void *data);
+void server_cursor_motion_absolute(struct wl_listener *listener, void *data);
+void server_cursor_button(struct wl_listener *listener, void *data);
+void server_cursor_axis(struct wl_listener *listener, void *data);
+void server_cursor_frame(struct wl_listener *listener, void *data);
 #endif
