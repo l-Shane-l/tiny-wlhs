@@ -74,7 +74,7 @@
             yambar
             mako
             bemenu
-            wbg
+            swaybg # formerly, this line was `wbg`
 
             # Build tools
             gcc
